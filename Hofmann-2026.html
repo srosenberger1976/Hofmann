@@ -1,0 +1,2072 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Hofmann - Vending Manager PRO</title>
+ <style>
+ :root { 
+   --primary: #2c3e50; 
+   --secondary: #18bc9c; 
+   --danger: #e74c3c; 
+   --warning: #f39c12; 
+   --light: #f8f9fa; 
+   --border: #cbd5e1; 
+ }
+ body { 
+   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+   margin: 0; 
+   padding: 0; 
+   background-color: #f1f5f9; 
+   color: #1e293b; 
+ }
+ header { 
+   background-color: var(--primary); 
+   color: white; 
+   padding: 15px 20px; 
+   display: flex; 
+   justify-content: space-between; 
+   align-items: center; 
+   flex-wrap: wrap; 
+   gap: 10px; 
+ }
+ .container { 
+   width: 100%; 
+   max-width: 100%; 
+   padding: 0 10px; 
+   box-sizing: border-box; 
+ }
+ .tabs { 
+   display: flex; 
+   gap: 5px; 
+   margin-bottom: 15px; 
+   overflow-x: auto; 
+   border-bottom: 2px solid var(--primary); 
+ }
+ .tab-btn { 
+   background-color: #e2e8f0; 
+   border: none; 
+   padding: 12px 18px; 
+   cursor: pointer; 
+   font-weight: bold; 
+   border-radius: 6px 6px 0 0; 
+   white-space: nowrap; 
+ }
+ .tab-btn.active { 
+   background-color: var(--primary); 
+   color: white; 
+ }
+ .tab-content { 
+   display: none; 
+   background: white; 
+   padding: 15px; 
+   border-radius: 8px; 
+   box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); 
+   overflow-x: auto; 
+ }
+ .tab-content.active { 
+   display: block; 
+ }
+ .form-row { 
+   display: flex; 
+   flex-wrap: wrap; 
+   gap: 15px; 
+   margin-bottom: 20px; 
+   background: var(--light); 
+   padding: 15px; 
+   border-radius: 6px; 
+ }
+ .form-row class { 
+   display: flex; 
+   flex-direction: column; 
+   gap: 5px; 
+ }
+ input, select { 
+   padding: 8px 12px; 
+   border: 1px solid var(--border); 
+   border-radius: 6px; 
+   font-size: 0.95rem; 
+ }
+ button.btn { 
+   background-color: var(--secondary); 
+   color: white; 
+   border: none; 
+   padding: 10px 16px; 
+   border-radius: 6px; 
+   cursor: pointer; 
+   font-weight: bold; 
+   font-size: 0.95rem; 
+ }
+ button.btn:hover { 
+   opacity: 0.9; 
+ }
+ .list-table { 
+   width: 100%; 
+   border-collapse: collapse; 
+   margin-top: 15px; 
+   background: white; 
+   table-layout: fixed; 
+ }
+ .list-table th { 
+   background-color: var(--primary); 
+   color: white; 
+   padding: 10px 6px; 
+   text-align: center; 
+   font-size: 0.85rem; 
+   white-space: nowrap; 
+ }
+ .list-table td { 
+   padding: 8px 6px; 
+   border-bottom: 1px solid #e2e8f0; 
+   vertical-align: middle; 
+   font-size: 0.9rem; 
+   overflow: hidden; 
+   text-overflow: ellipsis; 
+ }
+ .list-table tr:hover { 
+   background-color: #f8fafc; 
+ }
+ .nobrk { 
+   white-space: nowrap !important; 
+ }
+ .inventur-section { 
+   margin-top: 40px; 
+   background: #f8fafc; 
+   border: 2px solid #cbd5e1; 
+   padding: 20px; 
+   border-radius: 8px; 
+ }
+ .expired { 
+   background-color: #fee2e2 !important; 
+   color: var(--danger); 
+ }
+ @media print {
+   @page { size: landscape !important; margin: 5mm !important; }
+   header, .tabs, .form-row, .btn, .no-print { display: none !important; }
+   body { background: white; color: black; padding: 0; margin: 0; }
+   .container { width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
+   .tab-content { box-shadow: none; padding: 0; display: block !important; width: 100% !important; }
+   .list-table { width: 100% !important; table-layout: fixed !important; display: table !important; }
+   .list-table tr { page-break-inside: avoid !important; }
+   input[type="text"] { border: none !important; background: transparent !important; padding: 0 !important; font-weight: bold !important; font-size: 1rem !important; color: black !important; width: 100% !important; }
+   .list-table th { background-color: #2c3e50 !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+   
+   /* DRUCK-MODUS 1: ABRECHNUNG */
+   body.print-abrechnung #auswertung-tab { display: block !important; }
+   body.print-abrechnung #lieferschein-haupt-tabelle { display: block !important; }
+   body.print-abrechnung .inventur-section, body.print-abrechnung #netto-accounting-area { display: block !important; }
+   body.print-abrechnung .c10 { display: none !important; }
+   body.print-abrechnung #lager-tab, body.print-abrechnung #mhd-warn-bereich-print, body.print-abrechnung #wochenende-tab, body.print-abrechnung #artikel-tab { display: none !important; }
+   
+   /* DRUCK-MODUS 2: REINER BESTELLSCHEIN */
+   body.print-bestellschein #auswertung-tab { display: block !important; }
+   body.print-bestellschein #lieferschein-haupt-tabelle { display: block !important; }
+   body.print-bestellschein .c3, body.print-bestellschein .c4, body.print-bestellschein .c7, body.print-bestellschein .c8 { display: none !important; }
+   body.print-bestellschein .c1 { width: 10% !important; }
+   body.print-bestellschein .c2 { width: 35% !important; }
+   body.print-bestellschein .c5 { width: 15% !important; }
+   body.print-bestellschein .c6 { width: 15% !important; display: table-cell !important; }
+   body.print-bestellschein .c9 { width: 15% !important; display: table-cell !important; }
+   body.print-bestellschein .c10 { width: 15% !important; display: table-cell !important; }
+   body.print-bestellschein .inventur-section, body.print-bestellschein #netto-accounting-area, body.print-bestellschein #mhd-warn-bereich-print, body.print-bestellschein #lager-tab, body.print-bestellschein #wochenende-tab, body.print-bestellschein #artikel-tab { display: none !important; }
+
+   
+   /* Bringt die verbleibenden Spalten in eine saubere, lesbare Breite */
+   body.print-bestellschein .c1 { width: 10% !important; } /* Art. Nr. */
+   body.print-bestellschein .c2 { width: 35% !important; } /* Bezeichnung */
+   body.print-bestellschein .c5 { width: 15% !important; } /* Heimlager */
+   body.print-bestellschein .c6 { width: 15% !important; display: table-cell !important; } /* Automat */
+   body.print-bestellschein .c9 { width: 15% !important; display: table-cell !important; } /* Gesamt */
+   body.print-bestellschein .c10 { width: 15% !important; display: table-cell !important; } /* Bestellung */
+   
+   body.print-bestellschein .inventur-section,
+   body.print-bestellschein #netto-accounting-area,
+   body.print-bestellschein #mhd-warn-bereich-print,
+   body.print-bestellschein #lager-tab, 
+   body.print-bestellschein #wochenende-tab, 
+   body.print-bestellschein #artikel-tab { 
+     display: none !important; 
+   }
+
+   
+/* --- DRUCK-MODUS 3: REINES HEIMLAGER (FARBEN AKTIVIERT) --- */
+body.print-mhd #lager-tab { display: block !important; }
+body.print-mhd #lager-tab th:nth-child(5), body.print-mhd #lager-tab td:nth-child(5) { display: none !important; }
+
+/* Blendet die Spalte "Bestellung" im MHD-Druckmodus aus */
+body.print-mhd .mhd-bestell-head, 
+body.print-mhd .mhd-print-bestell-cell,
+body.print-mhd th.mhd-bestell-head,
+body.print-mhd td.mhd-print-bestell-cell { 
+    display: none !important; 
+}
+
+body.print-mhd .mhd-action-head, body.print-mhd .no-print-mhd-col { display: none !important; }
+body.print-mhd #lager-tab tr { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+body.print-mhd #auswertung-tab, body.print-mhd #lieferschein-haupt-tabelle, body.print-mhd .inventur-section, body.print-mhd #netto-accounting-area, body.print-mhd #wochenende-tab, body.print-mhd #artikel-tab { display: none !important; }
+
+
+
+ }
+
+
+/* Styling für das neue, scrollbare Warnfenster */
+.mhd-modal {
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+.mhd-modal-content {
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 20px;
+    border-radius: 8px;
+    width: 80%;
+    max-width: 700px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    font-family: sans-serif;
+}
+.mhd-modal-header {
+    font-size: 18px;
+    font-weight: bold;
+    color: #b91c1c;
+    border-bottom: 2px solid #fee2e2;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+.mhd-modal-body {
+    max-height: 450px;
+    overflow-y: auto; /* Aktiviert den Scrollbalken für lange Listen */
+    white-space: pre-wrap;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #1e293b;
+    padding-right: 5px;
+}
+.mhd-modal-footer {
+    text-align: right;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 10px;
+    margin-top: 15px;
+}
+
+
+
+
+/* --- NEU: Übersichtliche Fächer-Strukturierung für die Tabellen --- */
+
+/* Standard-Rahmen für alle Zellen in der Zähltabelle */
+#automat-liste-tbody td {
+    border-bottom: 1px solid #cbd5e1;
+    padding: 8px 6px;
+}
+
+/* Hintergrundfarben für die Fächer (Wechselnd Grau und Weiß) */
+#automat-liste-tbody tr[id*="Fach 1"],
+#automat-liste-tbody tr[id*="Fach 3"],
+#automat-liste-tbody tr[id*="Fach 5"] {
+    background-color: #f1f5f9 !important; /* Angenehmes Soft-Grau */
+}
+
+#automat-liste-tbody tr[id*="Fach 2"],
+#automat-liste-tbody tr[id*="Fach 4"],
+#automat-liste-tbody tr[id*="Fach 6"] {
+    background-color: #ffffff !important; /* Weiß */
+}
+
+/* Ein deutlicher, dunklerer Rahmen über jeder neuen Fach-Gruppe zur Abgrenzung */
+#automat-liste-tbody tr[id$="Spirale 1"] {
+    border-top: 3px solid #64748b !important;
+}
+
+/* Zusätzlicher visueller Rahmen um die Eingabefelder im grauen Bereich */
+#automat-liste-tbody tr input, #automat-liste-tbody tr select {
+    border: 1px solid #cbd5e1;
+    background-color: #ffffff;
+}
+
+
+
+/* --- OPTIMIERTES DESIGN FÜR DIE AUTOMATEN-TABELLE --- */
+
+/* 1. Überschriften perfekt zentrieren, fetter und mit mehr Abstand darstellen */
+.list-table th {
+    background-color: #2c3e50 !important;
+    color: white !important;
+    padding: 14px 10px !important; /* Mehr Platz nach oben und unten */
+    text-align: center !important; /* Alle Überschriften strikt zentrieren */
+    font-size: 0.9rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px;
+    border-bottom: 3px solid #18bc9c; /* Schicker grüner Akzentbalken unter dem Kopf */
+}
+
+/* 2. Tabellenzellen ausrichten und modernisieren */
+#automat-liste-tbody td {
+    padding: 12px 8px !important;
+    vertical-align: middle !important; /* Inhalte vertikal perfekt mittig */
+    border-bottom: 1px solid #e2e8f0;
+}
+
+/* Erste Spalte (Fach / Spirale) linksbündig und fett lassen */
+#automat-liste-tbody td:first-child {
+    text-align: left !important;
+    font-weight: bold;
+    color: #334155;
+    padding-left: 15px !important;
+}
+
+/* Spalte für aktuellen IST-Wert zentrieren */
+#automat-liste-tbody td:nth-child(3) {
+    text-align: center !important;
+}
+
+/* Spalte für die aktuellen MHDs visuell beruhigen */
+#automat-liste-tbody td:nth-child(4) {
+    text-align: left !important;
+    font-size: 0.85rem;
+    color: #475569;
+    line-height: 1.4;
+}
+
+/* Spalte für "Auffüllen" zentrieren */
+#automat-liste-tbody td:nth-child(5) {
+    text-align: center !important;
+}
+
+/* 3. Eingabefelder und Dropdowns einheitlich zentrieren und verschönern */
+#automat-liste-tbody input[type="number"] {
+    text-align: center !important; /* Zahlen in den Feldern mittig platzieren */
+    padding: 6px 8px !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    font-size: 0.95rem !important;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+    transition: border-color 0.2s;
+}
+
+/* Blauer Fokus-Effekt, wenn man in ein Feld klickt */
+#automat-liste-tbody input[type="number"]:focus {
+    border-color: #3b82f6 !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2) !important;
+}
+
+#automat-liste-tbody select {
+    padding: 6px 10px !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    background-color: #fff !important;
+    font-size: 0.9rem !important;
+    color: #1e293b !important;
+}
+
+/* Untere "Soll"-Anzeige unter den Auffüllfeldern dezent zentrieren */
+#automat-liste-tbody td span {
+    display: block !important;
+    text-align: center !important;
+    margin-top: 4px;
+    font-size: 11px;
+    color: #64748b;
+}
+
+
+/* ==========================================================================
+   NEUES DESIGN FÜR DIE ZÄHLTABELLE (ÜBERSCHRIFTEN & FACH-FARBEN PERFEKT ALIGNIERT)
+   ========================================================================== */
+
+/* 1. Grund-Design für alle Spalten-Überschriften */
+.list-table th {
+    background-color: #2c3e50 !important;
+    color: white !important;
+    padding: 14px 10px !important;
+    font-size: 0.9rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px;
+    border-bottom: 3px solid #18bc9c !important;
+}
+
+/* 2. Exakte Ausrichtung: Überschrift & Spalten-Inhalt wie an einer Schnur gezogen */
+
+/* Spalte 1: Spirale / Fach -> Linksbündig */
+.list-table th:nth-child(1), #automat-liste-tbody td:first-child {
+    text-align: left !important;
+    padding-left: 20px !important;
+}
+#automat-liste-tbody td:first-child {
+    font-weight: bold;
+    color: #334155;
+}
+
+/* Spalte 2: Zugeordneter Artikel -> Linksbündig */
+.list-table th:nth-child(2), #automat-liste-tbody td:nth-child(2) {
+    text-align: left !important;
+    padding-left: 10px !important;
+}
+
+/* Spalte 3: Aktuelles IST -> Perfekt zentriert */
+.list-table th:nth-child(3), #automat-liste-tbody td:nth-child(3) {
+    text-align: center !important;
+}
+
+/* Spalte 4: Aktuelle MHDs im Automat -> Linksbündig */
+.list-table th:nth-child(4), #automat-liste-tbody td:nth-child(4) {
+    text-align: left !important;
+    padding-left: 15px !important;
+}
+#automat-liste-tbody td:nth-child(4) {
+    font-size: 0.85rem;
+    color: #475569;
+    line-height: 1.4;
+}
+
+/* Spalte 5: Auffüllen -> Perfekt zentriert */
+.list-table th:nth-child(5), #automat-liste-tbody td:nth-child(5) {
+    text-align: center !important;
+}
+
+
+/* 3. Zeilen-Abstände und Eingabefelder verschönern */
+#automat-liste-tbody td {
+    padding: 12px 8px !important;
+    vertical-align: middle !important;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+#automat-liste-tbody input[type="number"] {
+    text-align: center !important;
+    padding: 6px 8px !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    font-size: 0.95rem !important;
+}
+
+#automat-liste-tbody select {
+    padding: 6px 10px !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    background-color: #fff !important;
+}
+
+#automat-liste-tbody td span {
+    display: block !important;
+    text-align: center !important;
+    margin-top: 4px;
+    font-size: 11px;
+    color: #64748b;
+}
+
+
+/* 4. Abwechselnde Hintergrundfarben für die Fächer (Grau / Weiß) */
+#automat-liste-tbody tr[id*="Fach 1"],
+#automat-liste-tbody tr[id*="Fach 3"],
+#automat-liste-tbody tr[id*="Fach 5"] {
+    background-color: #f8fafc !important; /* Modernes, helles Grau-Blau */
+}
+
+#automat-liste-tbody tr[id*="Fach 2"],
+#automat-liste-tbody tr[id*="Fach 4"],
+#automat-liste-tbody tr[id*="Fach 6"] {
+    background-color: #ffffff !important; /* Reinweiß */
+}
+
+/* Ein dickerer Trennbalken, sobald ein neues Fach beginnt */
+#automat-liste-tbody tr[id$="Spirale 1"] {
+    border-top: 3px solid #cbd5e1 !important;
+}
+
+
+
+
+/* ==========================================================================
+   MODERNES TABS-DESIGN MIT HOVER-EFFEKT & FUNKTIONELLEN FARBEN
+   ========================================================================== */
+
+/* Grunddesign der Buttons */
+.tab-btn {
+    padding: 10px 18px !important;
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+    color: #475569 !important;
+    background-color: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease-in-out !important;
+}
+
+/* Hover-Effekt: Wenn man mit der Maus darüberfährt */
+.tab-btn:hover {
+    background-color: #e2e8f0 !important;
+    color: #1e293b !important;
+    border-color: #94a3b8 !important;
+    transform: translateY(-1px); /* Diskreter Sprung nach oben */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Aktiver Tab: Die Seite, auf der man sich gerade befindet */
+.tab-btn.active {
+    background-color: #3b82f6 !important; /* Kräftiges, modernes Blau */
+    color: white !important;
+    border-color: #2563eb !important;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+/* Spezifische kleine Icons vor den Texten (optional, sorgt für visuelle Anker) */
+.tab-btn::title {
+    font-weight: normal;
+}
+
+
+
+
+
+
+
+
+ </style>
+</head>
+<body>
+
+
+
+
+
+<!-- Das scrollbare Popup-Fenster mit neuem PDF-Druckknopf -->
+<div id="customMhdModal" class="mhd-modal">
+    <div class="mhd-modal-content">
+        <div class="mhd-modal-header">⚠️ HOFMANN VENDING MANAGER ALARM ⚠️</div>
+        <div id="customMhdModalBody" class="mhd-modal-body"></div>
+        <div class="mhd-modal-footer" style="display: flex; justify-content: space-between;">
+            <button class="btn" style="background-color: #e67e22; color: white; padding: 8px 16px; font-weight: bold; border-radius: 4px; cursor: pointer; border: none;" onclick="druckePopupAlsPdf()">Als PDF speichern / Drucken</button>
+            <button class="btn" style="background-color: #1e293b; color: white; padding: 8px 16px; font-weight: bold; border-radius: 4px; cursor: pointer; border: none;" onclick="document.getElementById('customMhdModal').style.display='none'">Schließen</button>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<header>
+ <div style="display: flex; flex-direction: column; gap: 2px;">
+  <h2 style="margin: 0;">Automaten - Hofmann</h2>
+  <span style="font-size: 0.9rem; opacity: 0.85; font-weight: 500;">Lagerverwaltung - Stationsnr.: 57180</span>
+ </div>
+ <div style="display: flex; align-items: center; gap: 15px;">
+  <span id="last-import-info" style="font-size: 0.85rem; background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 4px; display: none;"></span>
+  <button class="btn" style="background-color: #475569;" onclick="exportData()">Daten Sichern</button>
+  <button class="btn" style="background-color: #475569;" onclick="document.getElementById('importFile').click()">Daten Laden</button>
+  <input type="file" id="importFile" style="display:none;" onchange="importData(event)">
+ </div>
+</header>
+
+
+
+
+
+<div class="container">
+    <div class="tabs" style="display: flex; gap: 8px; margin-bottom: 15px;">
+        <button class="tab-btn active" onclick="openTab('wochenende-tab'); updateAnleitung('wochenende')" title="Automaten zählen & auffüllen">
+            📥 Wochenend-Zählung
+        </button>
+        <button class="tab-btn" onclick="openTab('lager-tab'); updateAnleitung('lager')" title="Lager & Wareneingang verwalten">
+            📦 Heimlager &amp; Wareneingang
+        </button>
+        <button class="tab-btn" onclick="openTab('artikel-tab'); updateAnleitung('artikel')" title="Preise & Produkte pflegen">
+            ⚙️ Artikelstamm &amp; Preise
+        </button>
+        <button class="tab-btn" onclick="openTab('auswertung-tab'); updateAnleitung('auswertung')" title="Umsätze prüfen & PDF drucken">
+            📊 Lieferschein-Auswertung &amp; PDF
+        </button>
+    </div>
+
+    <!-- DER NEUE INTERAKTIVE INFOKASTEN -->
+    <div id="tab-instruction-box" style="background-color: #eff6ff; border-left: 5px solid #3b82f6; padding: 15px; border-radius: 6px; margin-bottom: 25px; font-size: 0.92rem; color: #1e3a8a; line-height: 1.5;" class="no-print">
+        <strong>💡 Schritt-für-Schritt Anleitung:</strong>
+        <ul id="instruction-list" style="margin: 8px 0 0 20px; padding: 0;">
+            <li>Wähle zuerst oben den gewünschten Automaten aus.</li>
+            <li>Trage in Spalte 3 (<b>Aktuelles IST</b>) die gezählten Riegel ein. Drücke <b>Enter</b>, um ins nächste Fach zu springen.</li>
+            <li>Trage in Spalte 5 (<b>Auffüllen</b>) ein, wie viele Stück du aus dem Lager nachlegst. Das System zeigt dir das optimale <b>Soll</b> an.</li>
+            <li>Klicke ganz unten auf den grünen Button <b>"Befüllung abschließen"</b>, um die MHDs automatisch aus dem Heimlager zu ziehen!</li>
+        </ul>
+    </div>
+
+
+
+
+
+
+ <!-- TAB: WOCHENEND-ZÄHLUNG -->
+ <div id="wochenende-tab" class="tab-content active">
+<h3>Umlagerung: IST Bestand &rarr; Umlagerung aus Lager</h3> <div class="form-row">
+<div class="form-group">
+<label>Automat auswählen: </label>
+<select id="automat-select" onchange="renderWochenendeAutomat()" style="width: 250px;">
+<option value="903">Snackautomat 903</option>
+<option value="908">Kaffeeautomat 908</option>
+<option value="924">Kaffeeautomat 924</option>
+</select>
+</div>
+
+ </div>
+ <table class="list-table">
+ <thead>
+ <tr>
+ <th style="width: 15%; text-align:center;">Spirale / Fach</th>
+ <th style="width: 35%; text-align:left;">Zugeordneter Artikel</th>
+ <th style="width: 15%; text-align:center;">Aktuelles IST (Stk.)</th>
+ <th style="width: 20%; text-align:center;">Aktuelle MHDs im Automat</th>
+ <th style="width: 15%; background-color: #2980b9; color: white; text-align:center;">Auffüllen (+ Stk.)</th>
+ </tr>
+ </thead>
+ <tbody id="automat-liste-tbody"></tbody>
+ </table>
+ <div style="margin-top: 20px; background: #e2e8f0; padding: 15px; border-radius: 6px;">
+ <button class="btn" style="background-color: var(--secondary);" onclick="buchenUndAuffuellenManuell()">Befüllung abschließen (MHDs automatisch aus Lager ziehen)</button>
+ </div>
+ </div>
+ <!-- TAB: LAGER -->
+ <div id="lager-tab" class="tab-content">
+ 
+ <div class="form-row">
+ <div class="form-group"><label>Artikel:</label><select id="lager-art-select" style="width:250px;"></select></div>
+ <div class="form-group"><label>Menge (Kartons/Stangen):</label><input type="number" id="lager-menge" value="1" style="width:100px;"></div>
+ <div class="form-group"><label>MHD:</label><input type="date" id="lager-mhd"></div>
+ <div class="form-group" style="justify-content: flex-end;"><button class="btn" onclick="addLagerbestand()">Ins Heimlager einbuchen</button></div>
+ </div>
+ <h3>Anmeldung MHD / Abgelaufene Ware</h3>
+ <table class="list-table">
+ <thead>
+ <tr>
+ <th style="width: 10%; text-align:center;">Artikel-ID</th>
+ <th style="width: 30%; text-align:left;">Artikelname</th>
+ <th style="width: 15%; text-align:center;">Einheiten im Lager</th>
+ <th style="width: 15%; text-align:center;">Aktuell im Automat</th>
+ <th style="width: 10%; text-align:center;">Typ</th>
+ <th style="width: 10%; text-align:center;">MHD</th>
+ <th style="width: 10%; text-align:center;">Status</th>
+ </tr>
+ </thead>
+ <tbody id="lager-table-body"></tbody>
+ </table>
+ </div>
+ <!-- TAB: ARTIKELSTAMM -->
+ <div id="artikel-tab" class="tab-content">
+ <h3>Artikelstamm &amp; Preise manuell anpassen</h3>
+ <div class="form-row">
+ <div class="form-group"><label>Artikel-ID:</label><input type="text" id="art-id" placeholder="cola"></div>
+ <div class="form-group"><label>Vollständiger Name:</label><input type="text" id="art-name" placeholder="Coca Cola"></div>
+ <div class="form-group"><label>LE:</label><input type="number" id="art-le" value="24" style="width:80px;"></div>
+ <div class="form-group"><label>Preis (€):</label><input type="number" id="art-preis" value="1.50" step="0.01" style="width:90px;"></div>
+ <div class="form-group"><label>Spiraleinheit:</label><input type="number" id="art-min" value="10" style="width:90px;"></div>
+ <div class="form-group" style="justify-content: flex-end;"><button class="btn" onclick="addArtikel()">Artikel anlegen</button></div>
+ </div>
+ <table class="list-table"><thead><tr><th>ID</th><th>Name</th><th>LE</th><th>Preis (€)</th><th>Spiraleinheit</th><th>Aktion</th></tr></thead><tbody id="artikel-table-body"></tbody></table>
+ </div>
+ <!-- TAB: AUSWERTUNG -->
+ <div id="auswertung-tab" class="tab-content">
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+<h3 class="no-print">Inventur und Zahlen</h3>
+
+
+ <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+ <button class="btn" style="background-color: #9b59b6;" onclick="druckeUmsatzAbrechnung()"> Abrechnung + Zählerstände</button>
+ <button class="btn" style="background-color: #e67e22;" onclick="druckeBestellscheinAllein()"> Nur Bestellung drucken</button>
+<button class="btn" style="background-color: #3b5bdb;" onclick="druckeNurMhdListe()">Anmeldung MHD</button>
+ </div>
+ </div>
+ <div id="pdf-area">
+<!-- Geänderter Titelbereich im HTML -->
+<div id="lieferschein-haupt-tabelle">
+    <h2 style="color: #2c3e50; margin-bottom: 2px; font-weight: bold;">Automaten-Station:</h2>
+    <h2 style="color: #2c3e50; margin-top: 0; margin-bottom: 15px;">57180 / Schlüchtern</h2>
+    
+  <h3 id="druck-titel" style="color: #1e293b; margin-top: 5px; margin-bottom: 20px; font-weight: bold; font-size: 1.3rem;">
+    Bestellung
+</h3>
+
+
+
+ <table class="list-table">
+  <thead>
+  <tr>
+   <th class="c1" style="width: 7%; text-align:center;">Art. Nr.</th>
+   <th class="c2" style="width: 25%; text-align:left;">Bezeichnung</th>
+   <th class="c3" style="width: 5%; text-align:center;">LE</th>
+   <th class="c4" style="width: 8%; text-align:center;">Preis</th>
+   <th class="c5" style="width: 12%; text-align:center;">Bestand Heimlager</th>
+   <th class="c6" style="width: 11%; text-align:center;">Bestand Automat</th>
+   <th class="c7" style="width: 10%; text-align:center;">Verkauft (Stk.)</th>
+   <th class="c8" style="width: 9%; text-align:center;">Umsatz (€)</th>
+<!-- SO MUSS ES AUSSEHEN: -->
+<th class="c9" style="width: 11%; background-color: #27ae60; color: white; text-align:center;">Gesamtbestand</th>
+<th class="c10" style="width: 12%; background-color: #2980b9; color: white; text-align:center;">Bestellung</th>
+</tr>
+</thead>
+
+
+ <tbody id="gesamt-table-body"></tbody>
+ </table>
+ </div>
+ <div class="inventur-section">
+ <h3 style="margin-top: 0; border-bottom: 2px solid #2c3e50; padding-bottom: 5px; color: #2c3e50;">Automaten-Zählerstände:</h3>
+ <table class="list-table" style="margin-top: 10px;">
+ <thead>
+ <tr style="background-color: #34495e;">
+ <th>Automat / Gesamtzähler</th>
+ <th style="text-align:center;">ALT (Vormonat)</th>
+ <th style="text-align:center;">NEU (Aktuell)</th>
+ <th style="text-align:center;">DIFFERENZ (Umsatz)</th>
+</tr>
+</thead>
+<tbody id="zaehler-table-body"></tbody>
+</table>
+
+<!-- Hier fügen wir den Kasten für die detaillierte Umsatz-Abrechnung wieder ein -->
+<div id="netto-accounting-area" style="margin-top: 20px; padding: 15px; border: 1px dashed #cbd5e1; border-radius: 6px; background-color: #f8fafc;">
+    <!-- Hier drin baut JavaScript gleich die Zeilen live auf -->
+</div>
+
+</div>
+
+ </div>
+</div>
+
+
+<script>
+ const initialArtikel = {
+ "15": { name: "Coca Cola Lemon 0,33l-Ds.", le: 24, preis: 1.50 }, "29": { name: "Rotbäckchen 200ml-Tetrap.", le: 15, preis: 1.50 },
+ "36": { name: "X15 Energy Drink 0,25-Ds.", le: 24, preis: 1.50 }, "55": { name: "Fuze Tea Peach 0,4 l-PEW", le: 12, preis: 1.50 },
+ "90": { name: "Highspeed Bl.Cool 330ml-Ds", le: 24, preis: 1.50 }, "100": { name: "Red Bull 250 ml-Ds.", le: 24, preis: 2.50 },
+ "207": { name: "Puks Dessertkuchen 62g", le: 18, preis: 1.00 }, "208": { name: "Mini Cake Vanille 35 g", le: 27, preis: 0.80 },
+ "219": { name: "LL Frulito Kaubonbons 80g", le: 24, preis: 1.00 }, "220": { name: "Fritt 70g Frucht", le: 30, preis: 1.00 },
+ "221": { name: "Snatts Mini Brotsnack 35g", le: 30, preis: 1.00 }, "228": { name: "7Days Croissant 60g", le: 10, preis: 1.00 },
+ "231": { name: "Willis Kirschkuchen 90g", le: 24, preis: 1.00 }, "234": { name: "ChoViva Sun Rice M&C. 40g", le: 24, preis: 1.00 },
+ "240": { name: "Hanuta HN-Schnitte 2x22g", le: 18, preis: 1.00 }, "248": { name: "Duplo 2er 36,4g", le: 24, preis: 1.20 },
+ "255": { name: "Trolli Saure Glühwürm.150g", le: 24, preis: 1.50 }, "257": { name: "Trolli Kiss Erdbeeren 100g", le: 22, preis: 1.50 },
+ "263": { name: "Keks'n Cream Milk 2er 38g", le: 18, preis: 0.80 }, "267": { name: "Stroopwaffel Space 2er 80g", le: 24, preis: 1.00 },
+ "270": { name: "Hit Minis Cocoa 130g", le: 24, preis: 1.20 }, "272": { name: "Croco Snack Bacon 50g", le: 14, preis: 1.00 },
+ "274": { name: "Corny MILCH Classic 40g", le: 24, preis: 1.00 }, "276": { name: "Corny SCHOKO 50g", le: 24, preis: 1.00 },
+ "277": { name: "Corny BANANE 50g", le: 24, preis: 1.00 }, "278": { name: "Amer.Cookies CiokoLatte50g", le: 40, preis: 1.00 },
+ "282": { name: "Bifi Roll 40g", le: 24, preis: 1.50 }, "291": { name: "Twix 50 g", le: 32, preis: 1.20 }, "293": { name: "Mars 51g", le: 32, preis: 1.20 },
+ "297": { name: "Waffelröllchen Haseln.150g", le: 16, preis: 1.50 }, "299": { name: "Kinder Bueno 2er-Rgl. 43g", le: 30, preis: 1.50 },
+ "400": { name: "Pa-Cup XL Lav.Dolce we./Zu", le: 17, preis: 0.00 }, "401": { name: "Pa-Cup XL Lav.Dolce weiss", le: 17, preis: 0.00 },
+ "405": { name: "Pa-Cup Jac.Krön. weiss/Zu.", le: 17, preis: 0.00 }, "406": { name: "Pa-Cup Jac.Krönung weiss", le: 17, preis: 0.00 },
+ "407": { name: "Pa-Cup Jac.Krön.schw./Zu.", le: 17, preis: 0.00 }, "408": { name: "Pa-Cup Jac.Krön. schwarz", le: 17, preis: 0.00 },
+ "409": { name: "Pa-Cu Nesc. Espresso m.Zu.", le: 17, preis: 0.00 }, "410": { name: "Pa-Cup Lav. Café Vanilla", le: 15, preis: 0.00 },
+ "412": { name: "Pa.Cup Chocamento", le: 15, preis: 0.00 }, "413": { name: "Pa-Cup Bensd.Choco-Cappu.", le: 15, preis: 0.00 },
+ "416": { name: "Pa-Cup Dallmayr Lemon Tea", le: 17, preis: 0.00 }, "420": { name: "PA-Cup Klare Rindsbouillon", le: 17, preis: 0.00 },
+ "421": { name: "Pa-Cu Knorr Hühnersup/Nud.", le: 15, preis: 0.00 }, "422": { name: "Pa-Cu Knorr Gemü.Su./Crou.", le: 15, preis: 0.00 },
+ "423": { name: "PA-Cu Knorr Tomatensuppe", le: 15, preis: 0.00 }, "424": { name: "PA-Cup Knorr Gulaschsuppe", le: 15, preis: 0.00 }
+ };
+ const initialLager = [];
+ const initialZaehler = {
+ "903_R": { name: "Schlüchtern, Immergut GmbH 903 R (Gesamt)", alt: 8744.90, neu: 9440.60, isEuro: true },
+ "908_W": { name: "Schlüchtern, Immergut GmbH 908 W (Gesamt)", alt: 69081.32, neu: 71036.72, isEuro: true },
+ "924_W": { name: "Schlüchtern, Immergut GmbH 924 W (Gesamt)", alt: 144358.57, neu: 145113.97, isEuro: true },
+ "908_F": { name: "Schlüchtern, Immergut GmbH 908 W (Freiverkauf)", alt: 38871.21, neu: 40152.51, isEuro: false },
+ "924_F": { name: "Schlüchtern, Immergut GmbH 924 W (Freiverkauf)", alt: 27511.41, neu: 27933.61, isEuro: false }
+ };
+ let data = { artikel: {}, lager: [], automaten: { "903": {}, "908": {}, "924": {} }, bestellungen: {}, verkauft: {}, zaehler: {} };
+ const snackTabelleMap = ["15", "29", "36", "55", "90", "100", "207", "208", "219", "220", "221", "228", "231", "234", "240", "248", "255", "257", "263", "267", "270", "272", "274", "276", "277", "278", "282", "291", "293", "297", "299"];
+
+
+
+
+function zeigeKritischeMhdWarnung() {
+    setTimeout(function() {
+        let heute = new Date();
+        heute.setHours(0,0,0,0);
+        
+        let listeAbgelaufen = [];
+        let listeBaldAbgelaufen = [];
+        let listeWenigBestandSammlung = [];
+
+        let rows = document.querySelectorAll("#lager-table-body tr");
+        
+        rows.forEach(row => {
+            let cells = row.getElementsByTagName("td");
+            if (cells.length < 9) return; 
+
+            // Korrekter, sicherer Spaltenzugriff per Index
+            let artId = cells[0].innerText.trim();
+            let artName = cells[1].innerText.trim();
+            
+            if (artId.startsWith("4") || (parseInt(artId) >= 400 && parseInt(artId) <= 499)) return;
+            
+            let inputLager = cells[2].querySelector("input[type='number']");
+            let lagerMenge = inputLager ? parseInt(inputLager.value) || 0 : 0;
+            
+            let automatText = cells[3].innerText.trim();
+            let automatMenge = parseInt(automatText) || 0;
+            let gesamtBestand = lagerMenge + automatMenge;
+            
+            let mhdText = cells[5].innerText.trim(); 
+            let statusText = cells[6].innerText.trim(); 
+
+            if (statusText.includes("Wartet auf Gutschrift")) return;
+
+            let istAbgelaufen = row.classList.contains("expired") || statusText.toLowerCase().includes("abgelaufen");
+            let istBaldAbgelaufen = statusText.toLowerCase().includes("läuft in") || statusText.toLowerCase().includes("achtung");
+
+            let checkbox = cells[7].querySelector("input[type='checkbox']");
+            let istAusgebuchtMarkiert = checkbox && checkbox.checked;
+
+            if (istAbgelaufen) {
+                let hakenZusatz = istAusgebuchtMarkiert ? " 🔵 (Ausgebucht)" : "";
+                listeAbgelaufen.push(`• ID ${artId}: ${artName}\n  Mengen -> Lager: ${lagerMenge} Stk. | Automat: ${automatText} | (MHD: ${mhdText})${hakenZusatz}`);
+            } 
+            else if (istBaldAbgelaufen) {
+                let tageMatch = row.innerHTML.match(/in (\d+) Tagen/);
+                let tageMeldung = tageMatch ? ` | noch ${tageMatch[1]} Tage` : "";
+                let hakenZusatz = istAusgebuchtMarkiert ? " 🔵 (Ausgebucht)" : "";
+                listeBaldAbgelaufen.push(`• ID ${artId}: ${artName}\n  Mengen -> Lager: ${lagerMenge} Stk. | Automat: ${automatText} | (MHD: ${mhdText}${tageMeldung})${hakenZusatz}`);
+            }
+
+            if (gesamtBestand < 10) {
+                if (istAusgebuchtMarkiert || istAbgelaufen || istBaldAbgelaufen) return;
+                if (row.innerHTML.includes("Neue Ware vorhanden")) return;
+
+                listeWenigBestandSammlung.push({
+                    menge: gesamtBestand,
+                    text: `• ID ${artId}: ${artName}\n  Bestand im Lager: ${lagerMenge} Stk. | im Automat: ${automatText} | Gesamt: ${gesamtBestand} Stk. | MHD: ${mhdText} 🟢 (Haltbarkeit OK)`
+                });
+            }
+        });
+
+        listeWenigBestandSammlung.sort((a, b) => a.menge - b.menge);
+        let listeWenigBestand = listeWenigBestandSammlung.map(item => item.text);
+
+        let meldungsText = "";
+        meldungsText += "❌ BEREITS ABGELAUFENE WARE:\n";
+        meldungsText += "----------------------------------------------------------------------\n";
+        meldungsText += (listeAbgelaufen.length > 0 ? listeAbgelaufen.join("\n\n") : "Keine abgelaufenen Artikel.") + "\n\n\n";
+
+        meldungsText += "⏳ WARE LÄUFT BALD AB (NÄCHSTE 14 TAGE):\n";
+        meldungsText += "----------------------------------------------------------------------\n";
+        meldungsText += (listeBaldAbgelaufen.length > 0 ? listeBaldAbgelaufen.join("\n\n") : "Keine kritischen Fristen.") + "\n\n\n";
+
+        meldungsText += "📦 GERINGER GESAMTBESTAND (< 10 STÜCK LAGER + AUTOMAT ZUSAMMEN):\n";
+        meldungsText += "----------------------------------------------------------------------\n";
+        meldungsText += (listeWenigBestand.length > 0 ? listeWenigBestand.join("\n\n") : "Alle Artikel haben ausreichend Gesamtbestand.") + "\n";
+
+        if (listeAbgelaufen.length > 0 || listeBaldAbgelaufen.length > 0 || listeWenigBestand.length > 0) {
+            let modal = document.getElementById("customMhdModal");
+            let modalBody = document.getElementById("customMhdModalBody");
+            if (modal && modalBody) {
+                modalBody.textContent = meldungsText; // FIX: Das "=" war in der PDF verschwunden!
+                modal.style.display = "block";
+            }
+        }
+    }, 250);
+}
+
+
+
+// ABSOLUT STABILE DRUCKFUNKTION (Darf direkt darunter stehen)
+function druckePopupAlsPdf() {
+    let inhalt = document.getElementById("customMhdModalBody").textContent;
+    let infoFenster = window.open("", "_blank");
+    infoFenster.document.write("<html><head><title>MHD und Bestandsbericht</title><style>body { font-family: monospace; padding: 20px; line-height: 1.4; font-size: 14px; white-space: pre-wrap; } h2 { font-family: sans-serif; color: #2c3e50; margin-bottom: 20px; border-bottom: 2px solid #cbd5e1; padding-bottom: 10px; }</style></head><body><h2>⚠️ HOFMANN VENDING MANAGER - ALARMBERICHT ⚠️</h2><pre>" + inhalt + "</pre></body></html>");
+    infoFenster.document.close();
+    infoFenster.print();
+    infoFenster.close();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ function initAutomatenStruktur() {
+  if (Object.keys(data.automaten["903"]).length === 0) {
+   let counter = 0;
+   for(let f=1; f<=3; f++) {
+    for(let s=1; s<=4; s++) {
+     let zugewieseneId = snackTabelleMap[counter] || ""; counter++;
+     data.automaten["903"][`Fach ${f} - Spirale ${s}`] = { artId: zugewieseneId, mhd1: "", qty1: 0, mhd2: "", qty2: 0, inputIst: 0, inputAdd: 0 };
+    }
+   }
+   for(let f=4; f<=6; f++) {
+    for(let s=1; s<=8; s++) {
+     let zugewieseneId = snackTabelleMap[counter] || ""; counter++;
+     data.automaten["903"][`Fach ${f} - Spirale ${s}`] = { artId: zugewieseneId, mhd1: "", qty1: 0, mhd2: "", qty2: 0, inputIst: 0, inputAdd: 0 };
+    }
+   }
+  }
+  ["908", "924"].forEach(id => {
+   if (Object.keys(data.automaten[id]).length === 0) {
+    for(let s=1; s<=16; s++) { data.automaten[id][`Spirale ${s}`] = { artId: "", mhd1: "", qty1: 0, mhd2: "", qty2: 0, inputIst: 0, inputAdd: 0 }; }
+   }
+  });
+ }
+
+window.onload = function() {
+    let saved = localStorage.getItem("hofmann vending v9");
+    if(saved) {
+        data = JSON.parse(saved);
+        Object.keys(initialArtikel).forEach(id => {
+            if (!data.artikel[id]) data.artikel[id] = { name: initialArtikel[id].name, le: initialArtikel[id].le, preis: initialArtikel[id].preis, minBestand: 10 };
+        });
+
+        if (data.lager && data.lager.length > 0) {
+            let bereinigtesLager = [];
+            data.lager.forEach(item => {
+                let vorhandene = bereinigtesLager.find(b => b.artId === item.artId && b.mhd === item.mhd && b.status === item.status);
+                if (vorhandene) {
+                    vorhandene.menge += item.menge;
+                } else {
+                    bereinigtesLager.push(item);
+                }
+            });
+            data.lager = bereinigtesLager;
+        }
+    } else {
+        Object.keys(initialArtikel).forEach(id => { data.artikel[id] = { name: initialArtikel[id].name, le: initialArtikel[id].le, preis: initialArtikel[id].preis, minBestand: 10 }; });
+        data.zaehler = JSON.parse(JSON.stringify(initialZaehler)); data.archiv = {};
+    }
+    saveData(); 
+    initAutomatenStruktur(); 
+    updateSelects(); 
+    renderArtikel(); 
+    renderLager(); 
+    renderWochenendeAutomat();
+
+    // DYNAMISCHE REINE KW-BERECHNUNG BEIM START (OHNE WOCHENTAG)
+    let heute = new Date();
+    let ziel = new Date(heute.getTime());
+    let tagNr = (heute.getDay() + 6) % 7;
+    ziel.setDate(ziel.getDate() - tagNr + 3);
+    let ersterDonnerstag = ziel.getTime();
+    ziel.setMonth(0, 1);
+    if (ziel.getDay() !== 4) {
+        ziel.setMonth(0, 1 + ((4 - ziel.getDay() + 7) % 7));
+    }
+    let aktuelleKW = 1 + Math.ceil((ersterDonnerstag - ziel.getTime()) / 604800000);
+    window.aktuelleBerechneteKW = aktuelleKW;
+
+    // Schreibt jetzt stur nur "Bestellung KW 40" auf den Bildschirm
+    let docTitel = document.getElementById("druck-titel");
+    if(docTitel) {
+        docTitel.textContent = `Bestellung KW ${aktuelleKW}`;
+    }
+
+    // Startet das Alarm-Popup fehlerfrei im Hintergrund
+    zeigeKritischeMhdWarnung();
+};
+
+
+
+
+
+
+
+
+
+function saveData() { localStorage.setItem("hofmann vending v9", JSON.stringify(data)); updateSelects(); }
+
+
+ function openTab(tabId) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  if(tabId === 'auswertung-tab') renderAuswertung();
+  if(tabId === 'lager-tab') renderLager();
+  if(tabId === 'wochenende-tab') renderWochenendeAutomat();
+ }
+
+ function updateSelects() {
+  let selectLager = document.getElementById("lager-art-select"); if(!selectLager) return; selectLager.innerHTML = "";
+  Object.keys(data.artikel).forEach(id => {
+   let opt = document.createElement("option"); opt.value = id; opt.textContent = `${data.artikel[id].name} (${id})`; selectLager.appendChild(opt);
+  });
+  selectLager.onchange = pruefeMhdPflicht; pruefeMhdPflicht();
+ }
+
+ function addArtikel() {
+  let id = document.getElementById("art-id").value.trim().toLowerCase(); let name = document.getElementById("art-name").value.trim();
+  let le = parseInt(document.getElementById("art-le").value) || 24; let preis = parseFloat(document.getElementById("art-preis").value) || 0.0;
+  let min = parseInt(document.getElementById("art-min").value) || 0; if(!id || !name) return alert("Bitte ID und Name eingeben!");
+  data.artikel[id] = { name: name, le: le, preis: preis, minBestand: min }; saveData(); renderArtikel();
+ }
+
+ function updateArtikelPreis(id, neuerPreis) { data.artikel[id].preis = parseFloat(neuerPreis) || 0.0; saveData(); }
+
+function renderArtikel() {
+    let tbody = document.getElementById("artikel-table-body");
+    if(!tbody) return; 
+    tbody.innerHTML = "";
+    
+    Object.keys(data.artikel).forEach(id => {
+        let art = data.artikel[id]; 
+        let tr = document.createElement("tr");
+        
+        // Verhindert Fehler, falls minBestand bei alten Daten noch nicht existiert
+        if (art.minBestand === undefined) art.minBestand = 10;
+        
+        tr.innerHTML = `
+            <td style="text-align:center;"><b>${id}</b></td>
+            <td><input type="text" value="${art.name}" style="width:90%; padding: 4px; border:1px solid #cbd5e1; border-radius:4px;" onchange="updateArtikelNameLive('${id}', this.value)"></td>
+            <td style="text-align:center;">${art.le}</td>
+            <td style="text-align:center;"><input type="number" step="0.01" value="${art.preis.toFixed(2)}" style="width:80px; padding: 4px; text-align:center; border:1px solid #cbd5e1; border-radius:4px;" onchange="updateArtikelPreis('${id}', this.value)"> €</td>
+            <td style="text-align:center;"><input type="number" value="${art.minBestand}" style="width:70px; padding: 4px; text-align:center; border:1px solid #cbd5e1; border-radius:4px; font-weight:bold;" onchange="updateArtikelMinBestand('${id}', this.value)"> Stk.</td>
+            <td style="text-align:center;"><button class="btn" style="background-color:var(--danger); padding:4px 8px;" onclick="deleteArtikel('${id}')">Löschen</button></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+
+ function deleteArtikel(id) { if(confirm("Artikel löschen?")) { delete data.artikel[id]; saveData(); renderArtikel(); } }
+
+
+function addLagerbestand() {
+  let id = document.getElementById("lager-art-select").value; 
+  let menge = parseInt(document.getElementById("lager-menge").value) || 0;
+  let inputMhd = document.getElementById("lager-mhd").value; 
+  let idNum = parseInt(id) || 0;
+  
+  if (!inputMhd && idNum >= 400 && idNum <= 800) { inputMhd = "2099-12-31"; }
+  if(!id || menge <= 0 || !inputMhd) return alert("Felder ausfüllen!");
+  
+  let tatsaechlicheMenge = id.startsWith("4") ? menge : Math.round(menge); 
+  let formatierteMhd = inputMhd;
+  if(inputMhd.includes("-")) { 
+    let teile = inputMhd.split("-"); 
+    formatierteMhd = `${teile[2]}.${teile[1]}.${teile[0]}`; 
+  }
+  
+  // INTELLIGENTES ZUSAMMENFÜGEN: Prüfen, ob Charge (ID + MHD) bereits existiert
+  let bestehendeCharge = data.lager.find(l => l.artId === id && l.mhd === formatierteMhd && l.status !== "Wartet auf Gutschrift");
+  
+  if (bestehendeCharge) {
+    bestehendeCharge.menge += tatsaechlicheMenge;
+  } else {
+    data.lager.push({ artId: id, menge: tatsaechlicheMenge, mhd: formatierteMhd });
+  }
+  
+  data.lager.sort((a,b) => new Date(a.mhd.split('.').reverse().join('-')) - new Date(b.mhd.split('.').reverse().join('-')));
+  saveData(); renderLager(); 
+  alert("Erfolgreich im Heimlager verbucht!"); 
+  document.getElementById("lager-menge").value = "1";
+}
+
+
+ function pruefeMhdPflicht() {
+  let selectLager = document.getElementById("lager-art-select"); let mhdInput = document.getElementById("lager-mhd");
+  if (!selectLager || !mhdInput) return; let idNum = parseInt(selectLager.value) || 0;
+  if (idNum >= 400 && idNum <= 800) { mhdInput.disabled = true; mhdInput.value = ""; mhdInput.style.backgroundColor = "#e2e8f0"; mhdInput.style.cursor = "not-allowed"; }
+  else { mhdInput.disabled = false; mhdInput.style.backgroundColor = ""; mhdInput.style.cursor = ""; }
+ }
+
+ function updateLagerZeilenMenge(index, neueMenge) { let qty = parseFloat(neueMenge); if (isNaN(qty) || qty < 0) qty = 0; data.lager[index].menge = qty; saveData(); }
+
+
+
+
+
+
+
+
+
+function renderLager() {
+    let tbody = document.getElementById("lager-table-body");
+    if(!tbody) return; 
+    let tableEl = tbody.closest('table');
+
+    if(tableEl && !tableEl.querySelector('.aut-col-head')) {
+        tableEl.querySelector('thead tr').innerHTML = `
+            <th style="text-align:center; width: 10%;">Artikel-ID</th>
+            <th style="width: 25%;">Artikelname</th>
+            <th style="text-align:center; width: 12%;">Im Lager</th>
+            <th class="aut-col-head" style="text-align:center; width: 12%;">Aktuell im Automat</th>
+            <th style="text-align:center; width: 10%;">Typ</th>
+            <th style="text-align:center; width: 10%;">MHD</th>
+            <th style="text-align:center; width: 18%;">Status</th>
+            <th style="text-align:center; width: 8%;">Ausbuchen</th>
+            <th class="mhd-action-head" style="text-align:center; width: 5%;">[X]</th>
+        `;
+    }
+
+    tbody.innerHTML = ""; 
+    let heute = new Date();
+    heute.setHours(0,0,0,0);
+    let bereitsGezählteSpiralen = {};
+
+    data.lager.forEach((item, index) => {
+        let art = data.artikel[item.artId] || { name: "Unbekannt", le: 24 }; 
+        let tr = document.createElement("tr");
+        let statusText = item.status || "OK"; 
+        let typText = item.artId.startsWith("4") ? "Stangen" : "Stück";
+        let stkImAutomat = 0;
+        let istKaffeeBecher = (parseInt(item.artId) >= 400 && parseInt(item.artId) <= 499);
+
+        if(statusText !== "Wartet auf Gutschrift" && !istKaffeeBecher) {
+            ["903", "908", "924"].forEach(id => {
+                Object.keys(data.automaten[id]).forEach(pos => {
+                    let spirale = data.automaten[id][pos];
+                    if(spirale.artId === item.artId) {
+                        let eindeutigerSchluessel = `${id}_${pos}`;
+                        if (!bereitsGezählteSpiralen[eindeutigerSchluessel]) {
+                            if(spirale.mhd1 === item.mhd || (!spirale.mhd1 && item.mhd === "31.12.2099")) {
+                                stkImAutomat += (parseInt(spirale.qty1) || 0);
+                                bereitsGezählteSpiralen[eindeutigerSchluessel] = true;
+                            }
+                            if(spirale.mhd2 === item.mhd) {
+                                stkImAutomat += (parseInt(spirale.qty2) || 0);
+                                bereitsGezählteSpiralen[eindeutigerSchluessel] = true;
+                            }
+                        }
+                    }
+                });
+            });
+        }
+
+        let automatAnzeigeText = istKaffeeBecher ? "Freiverkauf" : `${stkImAutomat} Stk.`;
+        let gesamtBestandDerCharge = item.menge + stkImAutomat;
+        
+        let mhdDate = null;
+        if (item.mhd && item.mhd !== "31.12.2099") {
+            let parts = item.mhd.split('.');
+            if(parts.length === 3) {
+                mhdDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+            }
+        }
+
+        // Details der frischen Nachfolge-Ware ermitteln (> 14 Tage Restlaufzeit)
+        let neueWareMenge = 0;
+        let neueWareMhd = "";
+        let frischeWareVorhanden = false;
+
+        data.lager.forEach(l => {
+            if (l.artId !== item.artId || l.status === "Wartet auf Gutschrift" || l.menge <= 0) return;
+            
+            if (l.mhd === "31.12.2099") {
+                neueWareMenge = l.menge;
+                neueWareMhd = "-";
+                frischeWareVorhanden = true;
+            } else {
+                let lParts = l.mhd.split('.');
+                if(lParts.length === 3) {
+                    let chargeMhd = new Date(parseInt(lParts[2]), parseInt(lParts[1]) - 1, parseInt(lParts[0]));
+                    let diffTage = Math.ceil((chargeMhd.getTime() - heute.getTime()) / (1000 * 60 * 60 * 24));
+                    
+                    if (diffTage > 14) {
+                        neueWareMenge = l.menge;
+                        neueWareMhd = l.mhd;
+                        frischeWareVorhanden = true;
+                    }
+                }
+            }
+        });
+
+        // Überwachung: Wenn ausverkauft, aber KEIN neuerer Bestand da ist, NICHT verstecken (Erinnerung zum Bestellen!)
+        if (item.menge === 0 && stkImAutomat === 0 && statusText !== "Wartet auf Gutschrift") {
+            if (frischeWareVorhanden) {
+                return; 
+            }
+        }
+
+        let neueWareZusatz = frischeWareVorhanden ? `<br><span style="color:#16a34a; font-size:11px; font-weight: bold; display:block; margin-top:4px;">→ Neue Ware vorhanden: ${neueWareMenge} ${typText} (${neueWareMhd === "-" ? "kein MHD" : "MHD: " + neueWareMhd})</span>` : "";
+
+        if (statusText === "Wartet auf Gutschrift") {
+            if (mhdDate && mhdDate <= heute) {
+                tr.style.backgroundColor = "#fee2e2";
+                tr.style.color = "#b91c1c";
+                tr.style.fontWeight = "bold";
+                statusText = "Wartet auf Gutschrift" + neueWareZusatz;
+            } else {
+                tr.style.backgroundColor = "#e2e8f0";
+                tr.style.color = "#475569";
+                tr.style.fontWeight = "normal";
+            }
+        } else if (mhdDate && gesamtBestandDerCharge > 0) {
+            let zeitDiff = mhdDate.getTime() - heute.getTime();
+            let tageDiff = Math.ceil(zeitDiff / (1000 * 60 * 60 * 24));
+            if (tageDiff <= 0) {
+                tr.className = "expired";
+                tr.style.backgroundColor = "#fee2e2";
+                tr.style.color = "#b91c1c";
+                statusText = "Achtung! Abgelaufen" + neueWareZusatz;
+            } else if (tageDiff <= 14) {
+                tr.style.backgroundColor = "#fff3cd";
+                tr.style.color = "#856404";
+                statusText = `ACHTUNG (Läuft in ${tageDiff} Tagen ab!)` + neueWareZusatz;
+            }
+        }
+
+        if(item.menge === 0 && statusText === "OK") { 
+            tr.style.opacity = "0.8"; 
+            statusText = "Im Heimlager leer"; 
+        }
+
+        let aktionsButton = statusText.includes("Abgelaufen") ? `<button class="btn" style="background-color: #64748b; padding: 4px 6px; font-size:11px; margin-right:4px;" onclick="setGutschriftStatus(${index})">Gutschrift</button>` : "";
+
+        if (data.lager[index].istAusgebucht === undefined) data.lager[index].istAusgebucht = false;
+        let checkedStatus = data.lager[index].istAusgebucht ? "checked" : "";
+
+        tr.innerHTML = `
+            <td style="text-align:center;">${item.artId}</td>
+            <td>${art.name}</td>
+            <td style="text-align:center;"><input type="number" value="${item.menge}" style="width: 65px; font-weight: bold; padding: 4px; text-align:center;" min="0" onchange="updateLagerZeilenMenge(${index}, this.value)"> ${typText}</td>
+            <td style="font-weight:bold; text-align:center;">${automatAnzeigeText}</td>
+            <td style="text-align:center;">1x = ${art.le} Stk.</td>
+            <td style="text-align:center;">${item.mhd === "31.12.2099" ? "-" : item.mhd}</td>
+            <td style="text-align:left; padding-left: 8px; font-weight:500; vertical-align:middle;">${statusText}</td>
+            <td style="text-align:center;"><input type="checkbox" ${checkedStatus} onchange="toggleAusbuchen(${index}, this.checked)" style="transform: scale(1.3); cursor: pointer;"></td>
+            <td class="no-print-mhd-col" style="text-align:center;">${aktionsButton}<button class="btn" style="background-color:var(--danger); padding: 4px 8px; font-weight:bold; font-size: 13px; border-radius: 4px;" onclick="deleteLagerZeileManuell(${index})" title="Löschen">X</button></td>
+        `;
+        
+        tbody.appendChild(tr);
+    });
+}
+
+function toggleAusbuchen(index, status) {
+    data.lager[index].istAusgebucht = status;
+    saveData();
+    if(typeof renderAuswertung === "function") renderAuswertung();
+}
+
+
+
+
+ function setGutschriftStatus(index) {
+  if(!confirm("Gutschrift anfordern? Ware blockieren?")) return; let item = data.lager[index]; item.status = "Wartet auf Gutschrift";
+  ["903", "908", "924"].forEach(id => {
+   Object.keys(data.automaten[id]).forEach(pos => {
+    let spirale = data.automaten[id][pos]; if(spirale.artId === item.artId) { if(spirale.mhd1 === item.mhd) { spirale.qty1 = 0; spirale.mhd1 = ""; } if(spirale.mhd2 === item.mhd) { spirale.qty2 = 0; spirale.mhd2 = ""; } spirale.inputIst = (parseInt(spirale.qty1) || 0) + (parseInt(spirale.qty2) || 0); }
+   });
+  });
+  saveData(); renderLager(); if(document.getElementById('wochenende-tab').classList.contains('active')) renderWochenendeAutomat();
+ }
+
+ function deleteLagerZeileManuell(index) { if(confirm("Charge löschen?")) { data.lager.splice(index, 1); saveData(); renderLager(); } }
+ 
+
+
+function renderWochenendeAutomat() {
+    let autId = document.getElementById("automat-select").value;
+    let tbody = document.getElementById("automat-liste-tbody");
+    if(!tbody) return; 
+    tbody.innerHTML = "";
+
+    let layout = data.automaten[autId]; 
+    let artOptions = '<option value="">-- Leer --</option>';
+
+    Object.keys(data.artikel).forEach(id => { 
+        artOptions += `<option value="${id}">${data.artikel[id].name} (${id})</option>`; 
+    });
+
+    let keys = Object.keys(layout);
+    if(autId === "908" || autId === "924") { 
+        keys.sort((a, b) => (parseInt(b.replace(/[^0-9]/g, '')) || 0) - (parseInt(a.replace(/[^0-9]/g, '')) || 0)); 
+    }
+
+    keys.forEach(pos => {
+        let info = layout[pos]; 
+        let artInfo = data.artikel[info.artId] || { name: "<Kein Artikel zugewiesen>", minBestand: "-" }; 
+        
+        // FIX: Ein Artikel ist NUR DANN ausgebucht, wenn es KEINE EINZIGE frische Zeile (ohne Haken) mehr im Lager gibt!
+        let hatFrischeWare = data.lager.some(l => l.artId === info.artId && l.istAusgebucht !== true);
+        let hatAusgebuchteWare = data.lager.some(l => l.artId === info.artId && l.istAusgebucht === true);
+        
+        // Wenn eine ausgebuchte Charge existiert, aber KEINE frische Ware da ist, DANN blenden wir es aus
+        let sollAusblenden = hatAusgebuchteWare && !hatFrischeWare;
+
+        let mhdText = "";
+        let aktuellerIstWert = sollAusblenden ? 0 : (info.inputIst || 0);
+        
+        if (!sollAusblenden) {
+            if(info.qty1 > 0) { 
+                let d1 = info.mhd1; 
+                if(d1 && d1.includes("-")) d1 = d1.split("-").reverse().join("."); 
+                mhdText += `<div>Vorne: <b>${info.qty1} Stk.</b> (${d1 === "31.12.2099" ? "-" : d1})</div>`; 
+            }
+            if(info.qty2 > 0) { 
+                let d2 = info.mhd2; 
+                if(d2 && d2.includes("-")) d2 = d2.split("-").reverse().join("."); 
+                mhdText += `<div>Hinten: <b>${info.qty2} Stk.</b> (${d2 === "31.12.2099" ? "-" : d2})</div>`; 
+            }
+        }
+
+        if(mhdText === "") mhdText = `<span style="color:#94a3b8;">Spirale leer</span>`;
+
+       let tr = document.createElement("tr");
+tr.setAttribute("id", pos); // Gibt der Zeile den Namen (z.B. "Fach 1 - Spirale 1")
+
+        tr.innerHTML = `<td><b>${pos}</b></td><td><select onchange="updateSpiraleFeld('${autId}', '${pos}', 'artId', this.value)" id="sel-${autId}-${pos}">${artOptions}</select></td><td><input type="number" class="enter-ist" value="${aktuellerIstWert}" style="width:70px; font-weight:bold;" onchange="updateSpiraleFeld('${autId}', '${pos}', 'inputIst', this.value)" onkeydown="sprungNachUnten(event, 'enter-ist')"></td><td class="mhd-info-text">${mhdText}</td><td><input type="number" class="enter-add" value="${info.inputAdd || 0}" style="width: 70px; background:#e0f2fe; font-weight:bold; border:1px solid #0284c7;" onchange="updateSpiraleFeld('${autId}', '${pos}', 'inputAdd', this.value)" onkeydown="sprungNachUnten(event, 'enter-add')"><span style="font-size:11px; display: block; color: #64748b; margin-top:2px;">Soll: ${artInfo.minBestand}</span></td>`;
+
+        
+        tbody.appendChild(tr);
+        document.getElementById(`sel-${autId}-${pos}`).value = info.artId;
+    });
+}
+
+
+
+function updateSpiraleFeld(autId, pos, feld, val) {
+    if (!data.automaten) data.automaten = {};
+    if (!data.automaten[autId]) data.automaten[autId] = {};
+    if (!data.automaten[autId][pos]) data.automaten[autId][pos] = {};
+    
+    if (feld === 'inputIst' || feld === 'inputAdd') {
+        val = parseInt(val) || 0;
+    }
+    
+    data.automaten[autId][pos][feld] = val;
+    saveData();
+    
+    // Live-Update für die Soll-Anzeige (Spiraleinheit) im Browser
+    if (feld === 'artId' || feld === 'inputAdd') {
+        let artId = data.automaten[autId][pos].artId;
+        let artInfo = data.artikel[artId];
+        let aktuellesSoll = "-";
+        if (artId && artInfo) {
+            aktuellesSoll = artInfo.minBestand !== undefined ? artInfo.minBestand : 10;
+        }
+        
+        let td = document.querySelector(`input[onchange*="${pos}"][onchange*="inputAdd"]`)?.closest('td');
+        if (td) {
+            let span = td.querySelector('span');
+            if (span) span.textContent = aktuellesSoll !== "-" ? `Soll: ${aktuellesSoll}` : `Soll: -`;
+        }
+    }
+}
+
+ 
+
+
+
+
+
+
+
+
+
+function buchenUndAuffuellenManuell() {
+    let autId = document.getElementById("automat-select").value;
+    let layout = data.automaten[autId]; 
+    if(!confirm("Mengen verarbeiten?")) return;
+
+    Object.keys(layout).forEach(pos => {
+        let info = layout[pos]; 
+        if(!info.artId) return;
+
+        let altesGesamtIst = (parseInt(info.qty1) || 0) + (parseInt(info.qty2) || 0); 
+        let gemeldetesIst = parseInt(info.inputIst) || 0; 
+        let differenzVerkauft = altesGesamtIst - gemeldetesIst;
+
+        if (differenzVerkauft > 0) { 
+            data.verkauft[info.artId] = (data.verkauft[info.artId] || 0) + differenzVerkauft; 
+        }
+
+        let auffuellMenge = parseInt(info.inputAdd) || 0; 
+        let gelieferteChargen = [];
+
+        if(auffuellMenge > 0) {
+            // FIX: Wir suchen uns NUR die Zeilen aus dem Lager, die zu diesem Artikel gehören UND nicht ausgebucht/Gutschriften sind
+            let gueltigeLagerZeilen = data.lager.filter(l => l.artId === info.artId && l.istAusgebucht !== true && l.status !== "Wartet auf Gutschrift");
+
+            gueltigeLagerZeilen.forEach(lagerEintrag => {
+                if(auffuellMenge <= 0) return;
+
+                let lagerStueck = lagerEintrag.menge;
+                if(lagerStueck >= auffuellMenge) { 
+                    lagerEintrag.menge = lagerStueck - auffuellMenge; 
+                    gelieferteChargen.push({ mhd: lagerEintrag.mhd, qty: auffuellMenge }); 
+                    auffuellMenge = 0; 
+                }
+                else { 
+                    auffuellMenge -= lagerStueck; 
+                    gelieferteChargen.push({ mhd: lagerEintrag.mhd, qty: lagerStueck }); 
+                    lagerEintrag.menge = 0; 
+                }
+            });
+        }
+
+        let neuerBestand1 = gemeldetesIst; 
+        let neuerMhd1 = info.mhd1 || "31.12.2099"; 
+        let neuerBestand2 = 0; 
+        let neuerMhd2 = "";
+
+        if(gelieferteChargen.length > 0) {
+            gelieferteChargen.forEach(ch => {
+                if(neuerBestand1 === 0) { 
+                    neuerMhd1 = ch.mhd; 
+                    neuerBestand1 = ch.qty; 
+                }
+                else if (neuerMhd1 === ch.mhd) { 
+                    neuerBestand1 += ch.qty; 
+                }
+                else { 
+                    neuerMhd2 = ch.mhd; 
+                    neuerBestand2 += ch.qty; 
+                }
+            });
+        }
+
+        info.qty1 = neuerBestand1; 
+        info.mhd1 = neuerBestand1 > 0 ? neuerMhd1 : ""; 
+        info.qty2 = neuerBestand2; 
+        info.mhd2 = neuerBestand2 > 0 ? neuerMhd2 : "";
+        info.inputAdd = 0; 
+        info.inputIst = info.qty1 + info.qty2;
+    });
+
+    Object.keys(data.zaehler).forEach(key => {
+        if(data.zaehler[key].neu > data.zaehler[key].alt) {
+            data.zaehler[key].alt = data.zaehler[key].neu; 
+        }
+    });
+
+    saveData(); 
+    alert("Verbucht!"); 
+    renderWochenendeAutomat();
+}
+
+
+
+
+
+
+ function updateBestellSpalte(artId, wert) {
+  if (!data.bestellungen) data.bestellungen = {}; if (wert.includes(" ") && isNaN(wert)) { data.bestellungen[artId] = wert; saveData(); return; }
+  let reineZahl = wert.replace(/[^0-9]/g, ''); if(reineZahl === "" || parseInt(reineZahl) === 0) { data.bestellungen[artId] = ""; saveData(); return; }
+  let num = parseInt(reineZahl); let idNum = parseInt(artId) || 0; let einheit = (idNum <= 399) ? " Kartons" : (idNum <= 499 ? " Stangen" : " Stücke");
+  data.bestellungen[artId] = num + einheit; saveData(); renderAuswertung();
+ }
+
+ function updateManuelleVerkaeufe(artId, wert) {
+  if(!data.verkauft) data.verkauft = {}; data.verkauft[artId] = parseInt(wert) || 0; saveData();
+  let preis = data.artikel[artId]?.preis || 0; let umsatzFeld = document.getElementById(`umsatz-${artId}`);
+  if(umsatzFeld) umsatzFeld.textContent = ((parseInt(wert) || 0) * preis).toFixed(2) + " €"; calculateGesamtSummen();
+ }
+
+ function bereinigeDeutscheZahl(wert) {
+  if (typeof wert === "number") return wert; if (!wert) return 0.0;
+  let text = wert.toString().trim(); if (text.includes(".") && text.includes(",")) text = text.replace(/\./g, "");
+  text = text.replace(",", "."); let ergebnis = parseFloat(text); return isNaN(ergebnis) ? 0.0 : ergebnis;
+ }
+
+ function updateZaehlerStand(key, feld, wert) {
+  let val = bereinigeDeutscheZahl(wert); data.zaehler[key][feld] = val;
+  let diff = bereinigeDeutscheZahl(data.zaehler[key].neu) - bereinigeDeutscheZahl(data.zaehler[key].alt);
+  let diffFeld = document.getElementById(`diff-${key}`); if(diffFeld) diffFeld.textContent = data.zaehler[key].isEuro ? diff.toFixed(2) + " €" : diff.toFixed(2);
+  saveData(); renderNettoUmsatzAbrechnung();
+ }
+
+ function waehleNeuenMonatAbbrechnung() {
+  let monat = document.getElementById("abrechnungs-monat-select").value; let jahr = document.getElementById("abrechnungs-jahr-select").value;
+  if(!confirm("Abrechnung abschließen?")) return; if (!data.archiv) data.archiv = {}; data.archiv[`${monat}_${jahr}`] = JSON.parse(JSON.stringify(data.zaehler));
+  saveData(); wechselPeriodeLive();
+ }
+
+
+
+
+function wechselPeriodeLive() {
+    let monat = document.getElementById("abrechnungs-monat-select").value;
+    let jahr = document.getElementById("abrechnungs-jahr-select").value;
+    if (!data.archiv) data.archiv = {};
+    if (data.archiv[`${monat}_${jahr}`]) {
+        data.zaehler = JSON.parse(JSON.stringify(data.archiv[`${monat}_${jahr}`]));
+    }
+
+    // Offizielle Kalenderwochen-Berechnung (ISO-8601)
+    let heute = new Date();
+    let ziel = new Date(heute.getTime());
+    let tagNr = (heute.getDay() + 6) % 7;
+    ziel.setDate(ziel.getDate() - tagNr + 3);
+    let ersterDonnerstag = ziel.getTime();
+    ziel.setMonth(0, 1);
+    if (ziel.getDay() !== 4) {
+        ziel.setMonth(0, 1 + ((4 - ziel.getDay() + 7) % 7));
+    }
+    let aktuelleKW = 1 + Math.ceil((ersterDonnerstag - ziel.getTime()) / 604800000);
+    window.aktuelleBerechneteKW = aktuelleKW;
+
+    // Deutschen Wochentag ermitteln
+    let wochentage = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
+    let heutigerTag = wochentage[heute.getDay()];
+
+    // Überschrift auf dem Monitor anpassen
+    let docTitel = document.getElementById("druck-titel");
+    if(docTitel) {
+        docTitel.textContent = `Bestellung ${heutigerTag} - KW ${aktuelleKW}`;
+    }
+    saveData();
+    wechselPeriodeLiveTabelle();
+    renderAuswertung();
+}
+
+
+
+
+ function wechselPeriodeLiveTabelle() {
+  let zBody = document.getElementById("zaehler-table-body"); if(!zBody) return; zBody.innerHTML = "";
+  Object.keys(data.zaehler).forEach(key => {
+   let z = data.zaehler[key]; let diff = bereinigeDeutscheZahl(z.neu) - bereinigeDeutscheZahl(z.alt);
+   let tr = document.createElement("tr");
+   tr.innerHTML = `<td><b>${z.name}</b></td><td style="text-align:center;"><input type="text" value="${z.alt}" style="width:100px; text-align:center;" onchange="updateZaehlerStand('${key}', 'alt', this.value)"> €</td><td style="text-align:center;"><input type="text" value="${z.neu}" style="width:100px; background-color:#fff9db; border:1px solid #fab005; text-align:center;" onchange="updateZaehlerStand('${key}', 'neu', this.value)"> €</td><td id="diff-${key}" style="font-weight:bold; color:#c92a2a; text-align:center;">${diff.toFixed(2)} €</td>`;
+   zBody.appendChild(tr);
+  });
+  renderNettoUmsatzAbrechnung();
+ }
+
+
+function renderNettoUmsatzAbrechnung() {
+    let abbArea = document.getElementById("netto-accounting-area");
+    if(!abbArea) return;
+    
+    // 1. Umsätze korrekt ausrechnen
+    let diff903 = bereinigeDeutscheZahl(data.zaehler["903_R"]?.neu) - bereinigeDeutscheZahl(data.zaehler["903_R"]?.alt);
+    
+    let brutto908 = bereinigeDeutscheZahl(data.zaehler["908_W"]?.neu) - bereinigeDeutscheZahl(data.zaehler["908_W"]?.alt);
+    let frei908 = bereinigeDeutscheZahl(data.zaehler["908_F"]?.neu) - bereinigeDeutscheZahl(data.zaehler["908_F"]?.alt);
+    let netto908 = brutto908 - frei908;
+    
+    let brutto924 = bereinigeDeutscheZahl(data.zaehler["924_W"]?.neu) - bereinigeDeutscheZahl(data.zaehler["924_W"]?.alt);
+    let frei924 = bereinigeDeutscheZahl(data.zaehler["924_F"]?.neu) - bereinigeDeutscheZahl(data.zaehler["924_F"]?.alt);
+    let netto924 = brutto924 - frei924;
+    
+    let gesamtNetto = diff903 + netto908 + netto924;
+
+    // 2. Den kompletten Text sauber und vollständig aufbauen
+    abbArea.innerHTML = `
+        <h4>Detaillierte Umsatz-Abrechnung (Bereinigter Netto-Umsatz):</h4>
+        <div style="font-size: 0.95rem; line-height: 1.6; color: #1e293b;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span>Umsatz Snackautomat 903 R:</span>
+                <b>${diff903.toFixed(2)} €</b>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span>Umsatz Kaffee 908 W <small style="color: #64748b;">(Gesamt: ${brutto908.toFixed(2)} € | Freiverkauf: -${frei908.toFixed(2)} €)</small>:</span>
+                <span style="color: #16a34a; font-weight: bold;">${netto908.toFixed(2)} €</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed #cbd5e1;">
+                <span>Umsatz Kaffee 924 W <small style="color: #64748b;">(Gesamt: ${brutto924.toFixed(2)} € | Freiverkauf: -${frei924.toFixed(2)} €)</small>:</span>
+                <span style="color: #16a34a; font-weight: bold;">${netto924.toFixed(2)} €</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: bold; color: #b91c1c; border-top: 2px solid #2c3e50; padding-top: 6px;">
+                <span>Gesamter Netto-Umsatz (Abrechnungssumme):</span>
+                <span>${gesamtNetto.toFixed(2)} €</span>
+            </div>
+        </div>
+    `;
+}
+
+
+// AB HIER ERSETZEN (Seite 27):
+
+function druckeUmsatzAbrechnung() {
+    let kw = window.aktuelleBerechneteKW || 40;
+    let t3 = document.getElementById("druck-titel");
+    
+    // Holt sich den aktuell ausgewählten Monat und das Jahr aus den Dropdown-Feldern
+    let monatSelect = document.getElementById("abrechnungs-monat-select");
+    let monatText = monatSelect ? monatSelect.options[monatSelect.selectedIndex].text : "September";
+    let jahrSelect = document.getElementById("abrechnungs-jahr-select");
+    let jahrText = jahrSelect ? jahrSelect.value : "2026";
+
+    // Setzt den korrekten Titel für das PDF-Druckfenster
+    if(t3) { t3.textContent = `Inventur und Zahlen ${monatText} ${jahrText}`; }
+    document.body.className = "print-abrechnung";
+    
+    setTimeout(() => {
+        window.print();
+        
+        // Führt die Bereinigung nach dem Drucken aus
+        if(typeof clearBestellungenNachDruck === "function") { 
+            clearBestellungenNachDruck(); 
+        } else { 
+            data.bestellungen = {}; 
+            renderAuswertung(); 
+        }
+        
+        // FIX: Nach dem Drucken bleibt der ausgewählte Monat und das Jahr felsenfest stehen!
+        if(t3) { t3.textContent = `Inventur und Zahlen ${monatText} ${jahrText}`; }
+    }, 150);
+}
+
+
+
+function druckeBestellscheinAllein() {
+    let kw = window.aktuelleBerechneteKW || 40;
+    let wochentage = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
+    let heutigerTag = wochentage[new Date().getDay()];
+
+    let t3 = document.getElementById("druck-titel");
+    if(t3) { t3.textContent = `Bestellung ${heutigerTag} - KW ${kw}`; }
+    document.body.className = "print-bestellschein";
+    
+    setTimeout(() => {
+        window.print();
+        if(typeof clearBestellungenNachDruck === "function") { clearBestellungenNachDruck(); }
+        else { data.bestellungen = {}; renderAuswertung(); }
+        if(t3) { t3.textContent = `Bestellung ${heutigerTag} - KW ${kw}`; }
+    }, 150);
+}
+
+
+function druckeNurMhdListe() {
+    let lagerTab = document.getElementById("lager-tab");
+    let t3 = document.getElementById("druck-titel");
+    let alteUeberschriften = [];
+    
+    if(t3) { t3.textContent = "Anmeldung MHD / Abgelaufene Ware"; }
+    if(lagerTab) {
+        let h3s = lagerTab.querySelectorAll("h3");
+        h3s.forEach(h3 => {
+            alteUeberschriften.push({ element: h3, text: h3.textContent });
+            h3.textContent = "Anmeldung MHD / Abgelaufene Ware";
+        });
+    }
+    
+    document.body.className = "print-mhd";
+    
+    setTimeout(() => {
+        window.print();
+        let kw = window.aktuelleBerechneteKW || 40;
+        if(t3) { t3.textContent = `Inventur, Zahlen und Bestellung KW ${kw}`; }
+        alteUeberschriften.forEach(item => { item.element.textContent = item.text; });
+    }, 150);
+}
+
+
+function druckeBestellscheinAllein() {
+    let kw = window.aktuelleBerechneteKW || 38;
+    let t3 = document.getElementById("druck-titel");
+    if(t3) { t3.textContent = `Bestellung KW ${kw}`; }
+    
+    document.body.className = "print-bestellschein";
+    
+    setTimeout(() => { 
+        window.print();
+        clearBestellungenNachDruck(); 
+        
+        // Nach dem Drucken wieder zurück für deinen Monitor:
+        if(t3) { t3.textContent = `Bestellung KW ${kw}`; }
+    }, 150);
+}
+
+function druckeNurMhdListe() {
+    let lagerTab = document.getElementById("lager-tab");
+    let t3 = document.getElementById("druck-titel");
+    let alteUeberschriften = [];
+    
+    // Setzt die Hauptüberschrift für den MHD-Druck um
+    if(t3) { 
+        t3.textContent = "Anmeldung MHD / Abgelaufene Ware"; 
+    }
+    
+    if(lagerTab) {
+        let h3s = lagerTab.querySelectorAll("h3");
+        h3s.forEach(h3 => {
+            alteUeberschriften.push({ element: h3, text: h3.textContent });
+            h3.textContent = "Anmeldung MHD / Abgelaufene Ware";
+        });
+    }
+    
+    document.body.className = "print-mhd";
+    
+    setTimeout(() => { 
+        window.print(); 
+        // Nach dem Drucken wieder zurück für deinen Monitor:
+        let kw = window.aktuelleBerechneteKW || 38;
+        if(t3) { t3.textContent = `Inventur, Zahlen und Bestellung KW ${kw}`; }
+        alteUeberschriften.forEach(item => {
+            item.element.textContent = item.text;
+        });
+    }, 150);
+}
+
+
+ function calculateGesamtSummen() {
+  let totalStk = 0; let totalEuro = 0.0;
+  Object.keys(data.artikel).forEach(id => { let stk = data.verkauft[id] || 0; totalStk += stk; totalEuro += (stk * (data.artikel[id]?.preis || 0)); });
+  if(document.getElementById("total-stk-cell")) document.getElementById("total-stk-cell").textContent = totalStk;
+  if(document.getElementById("total-euro-cell")) document.getElementById("total-euro-cell").textContent = totalEuro.toFixed(2) + " €";
+ }
+
+function renderAuswertung() {
+    let gesamtBody = document.getElementById("gesamt-table-body");
+    if(!gesamtBody) return;
+    gesamtBody.innerHTML = "";
+    
+    if (!data.bestellungen) data.bestellungen = {};
+    if (!data.verkauft) data.verkauft = {};
+    
+    let alleIDs = new Set(Object.keys(data.artikel));
+    data.lager.forEach(l => { if (l.artId) alleIDs.add(l.artId); });
+    
+    ["903", "908", "924"].forEach(id => {
+        if (data.automaten[id]) {
+            Object.keys(data.automaten[id]).forEach(pos => {
+                if(data.automaten[id][pos].artId) alleIDs.add(data.automaten[id][pos].artId);
+            });
+        }
+    });
+    
+    // Artikelzeilen generieren
+    Array.from(alleIDs).sort((a,b) => parseInt(a) - parseInt(b)).forEach(artId => {
+        let art = data.artikel[artId] || { name: `Gelöschter Artikel (${artId})`, le: 1, preis: 0.00 };
+        
+        let lagerSumEinheiten = data.lager
+            .filter(l => l.artId === artId && l.istAusgebucht !== true)
+            .reduce((sum, c) => sum + c.menge, 0);
+            
+        let autSumStueck = 0;
+        let istKaffeeBecher = (parseInt(artId) >= 400 && parseInt(artId) <= 499);
+        
+        if (!istKaffeeBecher && data.automaten) {
+            ["903", "908", "924"].forEach(id => {
+                if (!data.automaten[id]) return;
+                Object.keys(data.automaten[id]).forEach(pos => {
+                    let sp = data.automaten[id][pos];
+                    if(sp.artId === artId) {
+                        let istMhd1Ausgebucht = data.lager.some(l => l.artId === artId && l.mhd === sp.mhd1 && l.istAusgebucht === true);
+                        let istMhd2Ausgebucht = data.lager.some(l => l.artId === artId && l.mhd === sp.mhd2 && l.istAusgebucht === true);
+                        if (!istMhd1Ausgebucht) autSumStueck += (parseInt(sp.qty1) || 0);
+                        if (!istMhd2Ausgebucht) autSumStueck += (parseInt(sp.qty2) || 0);
+                    }
+                });
+            });
+        }
+        
+        let heutigerGesamtBestandStueck = 0;
+        let lagerAnzeigeText = "";
+        let automatAnzeigeText = "";
+        
+        if (artId.startsWith("4") || istKaffeeBecher) {
+            heutigerGesamtBestandStueck = Math.round(lagerSumEinheiten * art.le);
+            automatAnzeigeText = "Freiverkauf";
+            lagerAnzeigeText = `${lagerSumEinheiten} Stangen`;
+        } else {
+            heutigerGesamtBestandStueck = Math.round(lagerSumEinheiten + autSumStueck);
+            lagerAnzeigeText = `${Math.round(lagerSumEinheiten)} Stk.`;
+            automatAnzeigeText = `${autSumStueck} Stk.`;
+        }
+        
+        let bestellwert = data.bestellungen[artId] || "";
+        let verkaufteStueck = data.verkauft[artId] || 0;
+        let errechneterUmsatz = verkaufteStueck * art.preis;
+        
+        let tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td class="c1" style="text-align:center;"><b>${artId}</b></td>
+            <td class="c2" style="text-align:left; overflow:hidden; text-overflow:ellipsis;">${art.name}</td>
+            <td class="c3" style="text-align:center;">${art.le}</td>
+            <td class="c4 nobrk" style="text-align:center;">${art.preis.toFixed(2)} €</td>
+            <td class="c5" style="text-align:center;">${lagerAnzeigeText}</td>
+            <td class="c6" style="text-align:center;">${automatAnzeigeText}</td>
+            <td class="c7" style="text-align:center;"><input type="number" value="${verkaufteStueck}" style="width:55px; padding:2px; text-align:center;" onchange="updateManuelleVerkaeufe('${artId}', this.value)"></td>
+            <td class="c8 nobrk" id="umsatz-${artId}" style="font-weight:600; text-align:center;">${errechneterUmsatz.toFixed(2)} €</td>
+            <td class="c9" style="font-weight:bold; color:#27ae60; background-color:#edfbd4; text-align:center;">${heutigerGesamtBestandStueck} Stk.</td>
+            <td class="c10" style="text-align:left; padding-left:10px;"><input type="text" value="${bestellwert}" style="width:95%; padding:4px; font-weight:bold;" onchange="updateBestellSpalte('${artId}', this.value)"></td>
+        `;
+        gesamtBody.appendChild(tr);
+    });
+    
+    // --- SUMMENZEILE AM ENDE DER TABELLE ---
+    let trSumme = document.createElement("tr");
+    trSumme.style.backgroundColor = "#eaedf1";
+    trSumme.style.fontWeight = "bold";
+    trSumme.style.borderTop = "2px solid #2c3e50";
+    trSumme.innerHTML = `
+        <td class="c1" style="text-align:center;">Σ</td>
+        <td class="c2" style="text-align:left;" colspan="4">GESAMTSUMME:</td>
+        <td class="c6"></td>
+        <td class="c7" id="total-stk-cell" style="text-align:center; color:#2c3e50; font-size:1rem;">0</td>
+        <td class="c8 nobrk" id="total-euro-cell" style="text-align:center; color:#b91c1c; font-size:1rem;">0.00 €</td>
+        <td class="c9" style="background-color:#edfbd4;"></td>
+        <td class="c10"></td>
+    `;
+    gesamtBody.appendChild(trSumme);
+
+    // Titel-Logik aus dem Original
+    let docTitel = document.getElementById("druck-titel");
+    if (docTitel) {
+        let monatSelect = document.getElementById("abrechnungs-monat-select");
+        let monatText = monatSelect ? monatSelect.options[monatSelect.selectedIndex].text : "September";
+        let jahrSelect = document.getElementById("abrechnungs-jahr-select");
+        let jahrText = jahrSelect ? jahrSelect.value : "2026";
+        docTitel.textContent = `Inventur und Zahlen ${monatText} ${jahrText}`;
+    }
+    
+    calculateGesamtSummen();
+    
+    // Steuerungsleiste (Monats-Auswahl) generieren falls noch nicht vorhanden
+    let zTableSection = document.getElementById("zaehler-table-body")?.closest('.inventur-section');
+    if(zTableSection && !document.getElementById('monat-control-bar')) {
+        let gewaehlterMonat = data.aktuellerMonatAuswahl || "sep";
+        let gewaehltesJahr = data.aktuellesJahrAuswahl || "2026";
+        let ctrlBar = document.createElement("div");
+        ctrlBar.id = "monat-control-bar";
+        ctrlBar.className = "no-print";
+        ctrlBar.style.marginBottom = "15px";
+        ctrlBar.style.padding = "10px";
+        ctrlBar.style.background = "#e2e8f0";
+        ctrlBar.style.borderRadius = "6px";
+        ctrlBar.style.display = "flex";
+        ctrlBar.style.gap = "12px";
+        ctrlBar.style.alignItems = "center";
+        ctrlBar.style.flexWrap = "wrap";
+        ctrlBar.innerHTML = `<label><b>Abrechnungsmonat:</b></label><select id="abrechnungs-monat-select" onchange="data.aktuellerMonatAuswahl=this.value; wechselPeriodeLive()" style="padding:5px;"><option value="jan">Januar</option><option value="feb">Februar</option><option value="mrz">März</option><option value="apr">April</option><option value="mai">Mai</option><option value="jun">Juni</option><option value="jul">Juli</option><option value="aug">August</option><option value="sep">September</option><option value="okt">Oktober</option><option value="nov">November</option><option value="dez">Dezember</option></select><label><b>Jahr:</b></label><select id="abrechnungs-jahr-select" onchange="data.aktuellesJahrAuswahl=this.value; wechselPeriodeLive()" style="padding:5px;"><option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option></select><button class="btn" style="background-color:#d9480f; padding:6px 12px; font-size:13px;" onclick="waehleNeuenMonatAbbrechnung()">Monat abschließen &amp; Werte als ALT übernehmen</button>`;
+        zTableSection.insertBefore(ctrlBar, zTableSection.firstChild);
+        document.getElementById("abrechnungs-monat-select").value = gewaehlterMonat;
+        document.getElementById("abrechnungs-jahr-select").value = gewaehltesJahr;
+    }
+
+    // AUTOMATEN-ZÄHLERSTÄNDE GENERIEREN
+    let zBody = document.getElementById("zaehler-table-body");
+    if(zBody) {
+        zBody.innerHTML = "";
+        Object.keys(data.zaehler).forEach(key => {
+            let z = data.zaehler[key];
+            let diff = bereinigeDeutscheZahl(z.neu) - bereinigeDeutscheZahl(z.alt);
+            let tr = document.createElement("tr");
+            tr.innerHTML = `<td><b>${z.name}</b></td><td style="text-align:center;"><input type="text" value="${z.alt}" style="width:100px; text-align:center;" onchange="updateZaehlerStand('${key}', 'alt', this.value)"> €</td><td style="text-align:center;"><input type="text" value="${z.neu}" style="width: 100px; background-color:#fff9db; border:1px solid #fab005; text-align:center;" onchange="updateZaehlerStand('${key}', 'neu', this.value)"> €</td><td id="diff-${key}" style="font-weight:bold; color:#c92a2a; text-align:center; ">${diff.toFixed(2)} €</td>`;
+            zBody.appendChild(tr);
+        });
+    }
+
+    renderNettoUmsatzAbrechnung();
+
+    // HEIMLAGER-MHD WARNUNGEN GENERIEREN
+    let mhdBody = document.getElementById("mhd-warn-body");
+    if(mhdBody) {
+        mhdBody.innerHTML = "";
+        let heute = new Date(); 
+        heute.setHours(0,0,0,0);
+        data.lager.forEach(item => {
+            if(item.mhd !== "31.12.2099" && item.menge > 0) {
+                let tr = document.createElement("tr");
+                let parts = item.mhd.split('.');
+                if(parts.length === 3) {
+                    let mhdDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+                    if(mhdDate <= heute) tr.className = "expired";
+                    tr.innerHTML = `<td style="text-align:center; ">${item.artId}</td><td>${data.artikel[item.artId]?.name || item.artId}</td><td style="text-align:center; ">${item.menge} Stk.</td><td style="text-align:center; ">${item.mhd}</td><td style="text-align:center; font-weight:bold;">${mhdDate <= heute ? 'ABGELAUFEN': 'OK'}</td>`;
+                    mhdBody.appendChild(tr);
+                }
+            }
+        });
+        if(mhdBody.innerHTML === "") mhdBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:green; font-weight:bold;">Keine abgelaufenen Waren im Heimlager.</td></tr>`;
+    }
+}
+
+
+
+function exportToPDF() { window.print(); }
+
+function updateMhdBestellSpalte(index, wert) { if (!data.mhdBestellungen) data.mhdBestellungen = {}; data.mhdBestellungen[index] = wert; saveData(); }
+
+function clearBestellungenNachDruck() {
+ data.bestellungen = {};
+ saveData();
+ renderAuswertung();
+}
+
+function renderNettoUmsatzAbrechnung() {
+ let abbArea = document.getElementById("netto-accounting-area");
+ if(!abbArea) return;
+ 
+ // 1. Umsätze korrekt ausrechnen
+ let diff903 = bereinigeDeutscheZahl(data.zaehler["903_R"]?.neu) - bereinigeDeutscheZahl(data.zaehler["903_R"]?.alt);
+ let brutto908 = bereinigeDeutscheZahl(data.zaehler["908_W"]?.neu) - bereinigeDeutscheZahl(data.zaehler["908_W"]?.alt);
+ let frei908 = bereinigeDeutscheZahl(data.zaehler["908_F"]?.neu) - bereinigeDeutscheZahl(data.zaehler["908_F"]?.alt);
+ let netto908 = brutto908 - frei908;
+ 
+ let brutto924 = bereinigeDeutscheZahl(data.zaehler["924_W"]?.neu) - bereinigeDeutscheZahl(data.zaehler["924_W"]?.alt);
+ let frei924 = bereinigeDeutscheZahl(data.zaehler["924_F"]?.neu) - bereinigeDeutscheZahl(data.zaehler["924_F"]?.alt);
+ let netto924 = brutto924 - frei924;
+ 
+ let gesamtNetto = diff903 + netto908 + netto924;
+ 
+ // 2. Den kompletten Text sauber mit Standard-HTML aufbauen
+ let htmlInhalt = "<h4>📊 Detaillierte Umsatz-Abrechnung (Bereinigter Netto-Umsatz):</h4>";
+ htmlInhalt += "<div style='font-size: 0.95rem; line-height: 1.6; color: #1e293b;'>";
+ 
+ htmlInhalt += "<div style='display: flex; justify-content: space-between; margin-bottom: 4px;'>";
+ htmlInhalt += "<span>Umsatz Snackautomat 903 R:</span>";
+ htmlInhalt += "<b>" + diff903.toFixed(2) + " €</b>";
+ htmlInhalt += "</div>";
+ 
+ htmlInhalt += "<div style='display: flex; justify-content: space-between; margin-bottom: 4px;'>";
+ htmlInhalt += "<span>Umsatz Kaffee 908 W <small style='color: #64748b;'>(Gesamt: " + brutto908.toFixed(2) + " € | Freiverkauf: -" + frei908.toFixed(2) + " €)</small>:</span>";
+ htmlInhalt += "<span style='color: #16a34a; font-weight: bold;'>" + netto908.toFixed(2) + " €</span>";
+ htmlInhalt += "</div>";
+ 
+ htmlInhalt += "<div style='display: flex; justify-content: space-between; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed #cbd5e1;'>";
+ htmlInhalt += "<span>Umsatz Kaffee 924 W <small style='color: #64748b;'>(Gesamt: " + brutto924.toFixed(2) + " € | Freiverkauf: -" + frei924.toFixed(2) + " €)</small>:</span>";
+ htmlInhalt += "<span style='color: #16a34a; font-weight: bold;'>" + netto924.toFixed(2) + " €</span>";
+ htmlInhalt += "</div>";
+ 
+ htmlInhalt += "<div style='display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: bold; color: #b91c1c; border-top: 2px solid #2c3e50; padding-top: 6px;'>";
+ htmlInhalt += "<span>Gesamter Netto-Umsatz (Abrechnungssumme):</span>";
+ htmlInhalt += "<span>" + gesamtNetto.toFixed(2) + " €</span>";
+ htmlInhalt += "</div>";
+ 
+ htmlInhalt += "</div>";
+ 
+ abbArea.innerHTML = htmlInhalt;
+}
+
+/* DYNAMISCHER EXPORT MIT DATUM UND UHRZEIT */
+function exportData() {
+ let jetzt = new Date();
+ let tag = String(jetzt.getDate()).padStart(2, '0');
+ let monat = String(jetzt.getMonth() + 1).padStart(2, '0');
+ let jahr = jetzt.getFullYear();
+ let stunde = String(jetzt.getHours()).padStart(2, '0');
+ let minute = String(jetzt.getMinutes()).padStart(2, '0');
+ 
+ let dateiname = `hofmann_vending_daten_${jahr}-${monat}-${tag}_${stunde}-${minute}.json`;
+ let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
+ let a = document.createElement('a'); a.setAttribute("href", dataStr); a.setAttribute("download", dateiname);
+ document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* IMPORT MIT ANZEIGE DES AKTUELLEN DATEINAMENS */
+function importData(e) {
+ let datei = e.target.files[0];
+ if (!datei) return;
+ let r = new FileReader();
+ r.onload = function(evt) {
+ data = JSON.parse(evt.target.result);
+ if(!data.zaehler) data.zaehler = JSON.parse(JSON.stringify(initialZaehler));
+ if(!data.archiv) data.archiv = {};
+ saveData();
+ 
+ let infoFeld = document.getElementById("last-import-info");
+ if (infoFeld) {
+ infoFeld.textContent = `Stand: ${datei.name.replace('hofmann_vending_daten_', '').replace('.json', '').replace('_', ' / ')}`;
+ infoFeld.style.display = "inline-block";
+ }
+ 
+ openTab('auswertung-tab'); alert("Daten geladen!");
+ };
+ r.readAsText(datei);
+}
+
+
+
+
+
+
+
+
+// Funktion für den automatischen Zeigensprung mit der Enter-Taste
+function sprungNachUnten(event, klassenName) {
+    if (event.key === "Enter") {
+        event.preventDefault(); // Verhindert das Neuladen oder Absenden der Seite
+        
+        // Alle sichtbaren Eingabefelder dieser Spalte holen
+        let alleFelder = Array.from(document.querySelectorAll(`.${klassenName}`));
+        let aktuellesIndex = alleFelder.indexOf(event.target);
+        
+        // Wenn es ein Feld darunter gibt, dorthin springen und Text markieren
+        if (aktuellesIndex !== -1 && alleFelder[aktuellesIndex + 1]) {
+            alleFelder[aktuellesIndex + 1].focus();
+            alleFelder[aktuellesIndex + 1].select(); // Markiert die Zahl direkt zum Überschreiben
+        }
+    }
+}
+
+
+
+// Speichert die geänderte Spiraleinheit (Mindestbestand) live ab
+function updateArtikelMinBestand(id, neuerMin) {
+    let num = parseInt(neuerMin);
+    if (isNaN(num) || num < 0) num = 0;
+    data.artikel[id].minBestand = num;
+    saveData();
+}
+
+// Speichert auch den geänderten Namen live ab, falls man tippfehler korrigiert
+function updateArtikelNameLive(id, neuerName) {
+    if(neuerName.trim() !== "") {
+        data.artikel[id].name = neuerName.trim();
+        saveData();
+    }
+}
+
+
+// Aktualisiert die Schritt-für-Schritt-Anleitung je nach gewähltem Tab
+function updateAnleitung(tabName) {
+    let list = document.getElementById("instruction-list");
+    let box = document.getElementById("tab-instruction-box");
+    if(!list || !box) return;
+
+    if (tabName === 'wochenende') {
+        box.style.backgroundColor = "#eff6ff";
+        box.style.borderLeftColor = "#3b82f6";
+        box.style.color = "#1e3a8a";
+        list.innerHTML = `
+            <li>Wähle zuerst oben den gewünschten Automaten (z.B. Snackautomat 903) aus.</li>
+            <li>Trage in Spalte 3 (<b>Aktuelles IST</b>) die gezählten Bestände ein. Drücke <b>Enter</b>, um sofort ins Fach darunter zu springen.</li>
+            <li>Trage in Spalte 5 (<b>Umlagerung aus Lager</b>) ein, wie viele Stück du neu in den Automaten packst.</li>
+            <li>Klicke ganz unten auf den grünen Button <b>"Befüllung abschließen"</b>. Dadurch werden die MHDs automatisch aus dem Heimlager abgebucht!</li>
+        `;
+    } else if (tabName === 'lager') {
+        box.style.backgroundColor = "#fff7ed";
+        box.style.borderLeftColor = "#f97316";
+        box.style.color = "#7c2d12";
+        list.innerHTML = `
+            <li><b>Wareneingang buchen:</b> Wähle oben einen Artikel, trage die Menge (Stk. oder Stangen) und das <b>MHD</b> ein. Klicke auf "Einbuchen".</li>
+            <li><b>Heimlager-Tabelle:</b> Hier siehst du all deine Vorräte. Du kannst Mengen direkt anpassen oder Artikel über das rote "X" löschen.</li>
+            <li><b>MHD-Warnung:</b> Ganz unten listet das System automatisch alle Artikel auf, deren Mindesthaltbarkeitsdatum bald abläuft oder überschritten ist.</li>
+        `;
+    } else if (tabName === 'artikel') {
+        box.style.backgroundColor = "#f0fdf4";
+        box.style.borderLeftColor = "#22c55e";
+        box.style.color = "#14532d";
+        list.innerHTML = `
+            <li><b>Neuen Artikel anlegen:</b> Gib ID, Name, LE (Liefereinheit), Preis und die <b>Spiraleinheit</b> ein und klicke auf "Artikel anlegen".</li>
+            <li><b>Live bearbeiten:</b> Du kannst Artikelnamen, Preise und Spiraleinheiten (maximales Fassungsvermögen eines Fachs) <b>direkt in der Tabelle anklicken und ändern</b>.</li>
+            <li><b>Löschen:</b> Ein Klick auf "Löschen" entfernt den Artikel dauerhaft aus dem Stammdaten-System.</li>
+        `;
+    } else if (tabName === 'auswertung') {
+        box.style.backgroundColor = "#faf5ff";
+        box.style.borderLeftColor = "#a855f7";
+        box.style.color = "#581c87";
+        list.innerHTML = `
+            <li><b>Monats-Auswahl:</b> Wähle oben den Abrechnungsmonat und das Jahr aus, um die passenden Zahlen zu laden.</li>
+            <li><b>Umsatzauswertung:</b> Spalte 7 zeigt dir die verkauften Stückzahlen, Spalte 8 den exakten Umsatz. Ganz unten siehst du die <b>Gesamtsummen</b>!</li>
+            <li><b>Monat abschließen:</b> Der orangefarbene Button speichert den aktuellen Monat ab und übernimmt die Endbestände als "ALT-Werte" für den Folgemonat.</li>
+            <li><b>PDF Export:</b> Klicke ganz unten auf "Als PDF speichern", um einen sauberen Lieferschein für deine Akten auszudrucken.</li>
+        `;
+    }
+}
+
+
+
+
+</script>
+</body>
+</html>
