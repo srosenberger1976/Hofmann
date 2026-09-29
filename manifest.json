@@ -1,6 +1,6 @@
 {
-"short_name": "DeinAppName",
-"name": "Dein voller App Name",
+"short_name": "Hofmann",
+"name": "Hofmann Automaten APP",
 "icons": [
 { "src": "icon-192.png", "type": "image/png", "sizes": "192x192" },
 { "src": "icon-512.png", "type": "image/png", "sizes": "512x512" }
