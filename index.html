@@ -530,6 +530,34 @@ body.print-mhd #auswertung-tab, body.print-mhd #lieferschein-haupt-tabelle, body
 
 
  </style>
+
+
+
+<!-- Verknüpfung zum Manifest für die Installation -->
+<link rel="manifest" href="manifest.json">
+
+<!-- Service Worker Registrierung -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log('Service Worker registriert!', reg))
+        .catch(err => console.error('Service Worker Fehler:', err));
+    });
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
 </head>
 <body>
 
