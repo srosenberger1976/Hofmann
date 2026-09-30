@@ -1020,14 +1020,35 @@ window.onload = function() {
 function saveData() { localStorage.setItem("hofmann vending v9", JSON.stringify(data)); updateSelects(); }
 
 
- function openTab(tabId) {
-  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-  document.getElementById(tabId).classList.add('active');
-  if(tabId === 'auswertung-tab') renderAuswertung();
-  if(tabId === 'lager-tab') renderLager();
-  if(tabId === 'wochenende-tab') renderWochenendeAutomat();
- }
+function openTab(tabId) {
+    // 1. Bestehende Tabs zurücksetzen und den neuen aktivieren
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    
+    // 2. Den Infokasten beim Klick auf einen Tab wieder sichtbar machen
+    const instructionBox = document.getElementById('tab-instruction-box');
+    if (instructionBox) {
+        instructionBox.style.display = 'block';
+    }
+    
+    // 3. Eure originalen Tab-Inhalte live laden
+    if(tabId === 'auswertung-tab') renderAuswertung();
+    if(tabId === 'lager-tab') renderLager();
+    if(tabId === 'wochenende-tab') renderWochenendeAutomat();
+    
+    // 4. Sanft nach oben scrollen, damit die Anleitung sichtbar ist
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// NEU: Blendet den Infokasten aus, sobald nach unten gescrollt wird
+window.addEventListener('scroll', function() {
+    const instructionBox = document.getElementById('tab-instruction-box');
+    if (window.scrollY > 50 && instructionBox) {
+        instructionBox.style.display = 'none';
+    }
+});
+
 
  function updateSelects() {
   let selectLager = document.getElementById("lager-art-select"); if(!selectLager) return; selectLager.innerHTML = "";
@@ -2092,6 +2113,14 @@ function updateAnleitung(tabName) {
     }
 }
 
+// Blendet den Infokasten aus, sobald der Nutzer nach unten scrollt
+window.addEventListener('scroll', function() {
+    const instructionBox = document.getElementById('tab-instruction-box');
+    // Wenn man mehr als 50 Pixel nach unten gescrollt hat, wird der Kasten ausgeblendet
+    if (window.scrollY > 50 && instructionBox) {
+        instructionBox.style.display = 'none';
+    }
+});
 
 
 
