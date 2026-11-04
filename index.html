@@ -206,6 +206,27 @@
         transform: scale(1.5) !important;
         margin-right: 5px;
     }
+
+
+    /* Blendet das data-label auf der linken Seite ein */
+    .list-table td[data-label]::before {
+        content: attr(data-label);
+        font-weight: bold;
+        color: #64748b; /* Dezentere graue Farbe für die Beschriftung */
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-block;
+    }
+
+    /* Ausnahme für die erste Zelle (Name/ID), da steht die Bezeichnung sonst doppelt */
+    #lager-table-body td:first-child::before,
+    #automat-liste-tbody td:first-child::before {
+        display: none !important;
+    }
+
+
+
 }
 
 /* HIER BEGINNT DEIN BESTEHENDER CODENBLOCK AUS DEM SCREENSHOT */
@@ -1356,17 +1377,25 @@ function renderLager() {
         if (data.lager[index].istAusgebucht === undefined) data.lager[index].istAusgebucht = false;
         let checkedStatus = data.lager[index].istAusgebucht ? "checked" : "";
 
-        tr.innerHTML = `
-            <td style="text-align:center;">${item.artId}</td>
-            <td>${art.name}</td>
-            <td style="text-align:center;"><input type="number" value="${item.menge}" style="width: 65px; font-weight: bold; padding: 4px; text-align:center;" min="0" onchange="updateLagerZeilenMenge(${index}, this.value)"> ${typText}</td>
-            <td style="font-weight:bold; text-align:center;">${automatAnzeigeText}</td>
-            <td style="text-align:center;">1x = ${art.le} Stk.</td>
-            <td style="text-align:center;">${item.mhd === "31.12.2099" ? "-" : item.mhd}</td>
-            <td style="text-align:left; padding-left: 8px; font-weight:500; vertical-align:middle;">${statusText}</td>
-            <td style="text-align:center;"><input type="checkbox" ${checkedStatus} onchange="toggleAusbuchen(${index}, this.checked)" style="transform: scale(1.3); cursor: pointer;"></td>
-            <td class="no-print-mhd-col" style="text-align:center;">${aktionsButton}<button class="btn" style="background-color:var(--danger); padding: 4px 8px; font-weight:bold; font-size: 13px; border-radius: 4px;" onclick="deleteLagerZeileManuell(${index})" title="Löschen">X</button></td>
-        `;
+tr.innerHTML = `
+<td data-label="Artikel-ID" style="text-align:center;">${item.artId}</td>
+<td data-label="Artikelname">${art.name}</td>
+<td data-label="Einheiten im Lager" style="text-align:center;">
+    <input type="number" value="${item.menge}" style="width: 65px; font-weight: bold; padding: 4px; text-align:center;" min="0" onchange="updateLagerZeilenMenge(${index}, this.value)"> ${typText}
+</td>
+<td data-label="Aktuell im Automat" style="font-weight:bold; text-align:center;">${automatAnzeigeText}</td>
+<td data-label="Typ" style="text-align:center;">1x = ${art.le} Stk.</td>
+<td data-label="MHD" style="text-align:center;">${item.mhd === "31.12.2099" ? "-" : item.mhd}</td>
+<td data-label="Status" style="text-align:left; padding-left: 8px; font-weight:500; vertical-align:middle;">${statusText}</td>
+<td data-label="Ausbuchen" style="text-align:center;">
+    <input type="checkbox" ${checkedStatus} onchange="toggleAusbuchen(${index}, this.checked)" style="transform: scale(1.3); cursor: pointer;">
+</td>
+<td class="no-print-mhd-col" style="text-align:center;">
+    ${aktionsButton}
+    <button class="btn" style="background-color:var(--danger); padding: 4px 8px; font-weight:bold; font-size: 13px; border-radius: 4px;" onclick="deleteLagerZeileManuell(${index})" title="Löschen">X</button>
+</td>
+`;
+
         
         tbody.appendChild(tr);
     });
