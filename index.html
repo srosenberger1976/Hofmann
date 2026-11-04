@@ -140,9 +140,79 @@
    background-color: #fee2e2 !important; 
    color: var(--danger); 
  }
- @media print {
-   @page { size: landscape !important; margin: 5mm !important; }
-   header, .tabs, .form-row, .btn, .no-print { display: none !important; }
+    /* ... Hier endet dein vorheriges CSS ... */
+}
+
+/* =========================================================
+   HIER DEN NEUEN BLOCK FÜR MOBILE GERÄTE EINFÜGEN 
+   ========================================================= */
+@media screen and (max-width: 600px) {
+    .list-table, 
+    .list-table thead, 
+    .list-table tbody, 
+    .list-table th, 
+    .list-table td, 
+    .list-table tr { 
+        display: block !important; 
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+    .list-table thead {
+        display: none !important;
+    }
+    .list-table tr {
+        margin-bottom: 15px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 10px;
+        background: #ffffff;
+    }
+    .list-table td {
+        text-align: left !important;
+        padding: 6px 4px !important;
+        border-bottom: 1px dashed #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .list-table td:last-child {
+        border-bottom: none;
+        justify-content: flex-end;
+    }
+    #lager-table-body td:first-child,
+    #automat-liste-tbody td:first-child {
+        font-size: 1.05rem;
+        font-weight: bold;
+        background-color: #f8fafc;
+        margin: -10px -10px 5px -10px;
+        padding: 10px !important;
+        border-radius: 7px 7px 0 0;
+        border-bottom: 1px solid #cbd5e1;
+    }
+    .list-table input[type="number"], 
+    .list-table select {
+        width: 90px !important;
+        padding: 8px !important;
+        font-size: 1rem !important;
+        text-align: center;
+    }
+    .list-table .btn {
+        padding: 8px 12px !important;
+        font-size: 0.9rem !important;
+    }
+    .list-table input[type="checkbox"] {
+        transform: scale(1.5) !important;
+        margin-right: 5px;
+    }
+}
+
+/* HIER BEGINNT DEIN BESTEHENDER CODENBLOCK AUS DEM SCREENSHOT */
+@media print {
+    @page { size: landscape !important; margin: 5mm !important; }
+    /* ... Restlicher Code bleibt unverändert ... */
+
    body { background: white; color: black; padding: 0; margin: 0; }
    .container { width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
    .tab-content { box-shadow: none; padding: 0; display: block !important; width: 100% !important; }
