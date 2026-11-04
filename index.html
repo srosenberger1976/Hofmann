@@ -1017,7 +1017,18 @@ body.print-mhd #auswertung-tab, body.print-mhd #lieferschein-haupt-tabelle, body
  "908_F": { name: "Schlüchtern, Immergut GmbH 908 W (Freiverkauf)", alt: 38871.21, neu: 40152.51, isEuro: false },
  "924_F": { name: "Schlüchtern, Immergut GmbH 924 W (Freiverkauf)", alt: 27511.41, neu: 27933.61, isEuro: false }
  };
- let data = { artikel: {}, lager: [], automaten: { "903": {}, "908": {}, "924": {} }, bestellungen: {}, verkauft: {}, zaehler: {} };
+
+
+
+
+// GITHUB SYNC KONFIGURATION
+const GITHUB_TOKEN = "DEIN_GITHUB_TOKEN"; 
+const GIST_ID = "DEINE_GIST_ID";           
+const GIST_FILENAME = "vending_data.json"; 
+let revisionHistory = [];
+
+let data = { artikel: {}, lager: [], automaten: { "903": {}, "908": {}, "924": {} }, bestellungen: {}, verkauft: {}, zaehler: {} };
+
  const snackTabelleMap = ["15", "29", "36", "55", "90", "100", "207", "208", "219", "220", "221", "228", "231", "234", "240", "248", "255", "257", "263", "267", "270", "272", "274", "276", "277", "278", "282", "291", "293", "297", "299"];
 
 
@@ -1162,58 +1173,100 @@ function druckePopupAlsPdf() {
   });
  }
 
+
+
+
+
+
+
+
+
+// Funktion zum Laden einer bestimmten Gist-Version (Revision)
+async function loadRevision(index) {
+  if (!revisionHistory || !revisionHistory[index]) return;
+  const datestr = new Date(revisionHistory[index].committed_at).toLocaleString("de-DE", {day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit"});
+  if (!confirm(`Möchtest du wirklich den Zustand vom ${datestr} Uhr laden?`)) return;
+  try {
+    const res = await fetch(revisionHistory[index].url, { headers: { "Authorization": `token ${GITHUB_TOKEN}` } });
+    const revData = await res.json();
+    if (revData.files[GIST_FILENAME]) {
+      data = JSON.parse(revData.files[GIST_FILENAME].content);
+      alert("Alte Version geladen! Verändere einen Wert oder speichere manuell, um sie aktiv zu setzen.");
+      renderArtikel(); renderLager(); renderWochenendeAutomat();
+    }
+  } catch (e) { alert("Fehler beim Laden"); }
+}
+
 window.onload = function() {
-    let saved = localStorage.getItem("hofmann vending v9");
-    if(saved) {
-        data = JSON.parse(saved);
-        Object.keys(initialArtikel).forEach(id => {
-            if (!data.artikel[id]) data.artikel[id] = { name: initialArtikel[id].name, le: initialArtikel[id].le, preis: initialArtikel[id].preis, minBestand: 10 };
-        });
+  // A. SOFORT LOKALE DATEN LADEN (Verhindert jegliches Hängen der Oberfläche)
+  let saved = localStorage.getItem("hofmann vending v9");
+  if(saved) {
+    data = JSON.parse(saved);
+    Object.keys(initialArtikel).forEach(id => {
+      if (!data.artikel[id]) data.artikel[id] = { name: initialArtikel[id].name, le: initialArtikel[id].le, preis: initialArtikel[id].preis, minBestand: 10 };
+    });
 
-        if (data.lager && data.lager.length > 0) {
-            let bereinigtesLager = [];
-            data.lager.forEach(item => {
-                let vorhandene = bereinigtesLager.find(b => b.artId === item.artId && b.mhd === item.mhd && b.status === item.status);
-                if (vorhandene) {
-                    vorhandene.menge += item.menge;
-                } else {
-                    bereinigtesLager.push(item);
-                }
-            });
-            data.lager = bereinigtesLager;
+    if (data.lager && data.lager.length > 0) {
+      let bereinigtesLager = [];
+      data.lager.forEach(item => {
+        let vorhandene = bereinigtesLager.find(b => b.artId === item.artId && b.mhd === item.mhd && b.status === item.status);
+        if (vorhandene) {
+          vorhandene.menge += item.menge;
+        } else {
+          bereinigtesLager.push(item);
         }
-    } else {
-        Object.keys(initialArtikel).forEach(id => { data.artikel[id] = { name: initialArtikel[id].name, le: initialArtikel[id].le, preis: initialArtikel[id].preis, minBestand: 10 }; });
-        data.zaehler = JSON.parse(JSON.stringify(initialZaehler)); data.archiv = {};
+      });
+      data.lager = bereinigtesLager;
     }
-    saveData(); 
-    initAutomatenStruktur(); 
-    updateSelects(); 
-    renderArtikel(); 
-    renderLager(); 
-    renderWochenendeAutomat();
+  } else {
+    Object.keys(initialArtikel).forEach(id => { data.artikel[id] = { name: initialArtikel[id].name, le: initialArtikel[id].le, preis: initialArtikel[id].preis, minBestand: 10 }; });
+    data.zaehler = JSON.parse(JSON.stringify(initialZaehler)); data.archiv = {};
+  }
 
-    // DYNAMISCHE REINE KW-BERECHNUNG BEIM START (OHNE WOCHENTAG)
-    let heute = new Date();
-    let ziel = new Date(heute.getTime());
-    let tagNr = (heute.getDay() + 6) % 7;
-    ziel.setDate(ziel.getDate() - tagNr + 3);
-    let ersterDonnerstag = ziel.getTime();
-    ziel.setMonth(0, 1);
-    if (ziel.getDay() !== 4) {
-        ziel.setMonth(0, 1 + ((4 - ziel.getDay() + 7) % 7));
-    }
-    let aktuelleKW = 1 + Math.ceil((ersterDonnerstag - ziel.getTime()) / 604800000);
-    window.aktuelleBerechneteKW = aktuelleKW;
+  // B. OBERFLÄCHE SOFORT ZEICHNEN
+  initAutomatenStruktur(); 
+  updateSelects(); 
+  renderArtikel(); 
+  renderLager(); 
+  renderWochenendeAutomat();
 
-    // Schreibt jetzt stur nur "Bestellung KW 40" auf den Bildschirm
-    let docTitel = document.getElementById("druck-titel");
-    if(docTitel) {
-        docTitel.textContent = `Bestellung KW ${aktuelleKW}`;
-    }
+  // Dynamische Kalenderwochen-Berechnung
+  let heute = new Date();
+  let ziel = new Date(heute.getTime());
+  let tagNr = (heute.getDay() + 6) % 7;
+  ziel.setDate(ziel.getDate() - tagNr + 3);
+  let ersterDonnerstag = ziel.getTime();
+  ziel.setMonth(0, 1);
+  if (ziel.getDay() !== 4) {
+    ziel.setMonth(0, 1 + ((4 - ziel.getDay() + 7) % 7));
+  }
+  let aktuelleKW = 1 + Math.ceil((ersterDonnerstag - ziel.getTime()) / 604800000);
+  window.aktuelleBerechneteKW = aktuelleKW;
 
-    // Startet das Alarm-Popup fehlerfrei im Hintergrund
-    zeigeKritischeMhdWarnung();
+  let docTitel = document.getElementById("druck-titel");
+  if(docTitel) {
+    docTitel.textContent = `Bestellung KW ${aktuelleKW}`;
+  }
+  zeigeKritischeMhdWarnung();
+
+  // C. ASYNCHRONER CLOUD-UPDATE IM HINTERGRUND (Stört das UI nicht)
+  if (GITHUB_TOKEN !== "DEIN_GITHUB_TOKEN" && GIST_ID !== "DEINE_GIST_ID") {
+    fetch(`https://github.com{GIST_ID}`, { headers: { "Authorization": `token ${GITHUB_TOKEN}` } })
+      .then(res => res.ok ? res.json() : null)
+      .then(gistData => {
+        if (gistData && gistData.files[GIST_FILENAME]) {
+          data = JSON.parse(gistData.files[GIST_FILENAME].content);
+          // Letzte 3 Sicherungspunkte im Hintergrund merken
+          if (typeof revisionHistory !== 'undefined') {
+            revisionHistory = gistData.history ? gistData.history.slice(0, 3) : [];
+          }
+          // Ansichten leise mit den frischen Cloud-Daten aktualisieren
+          updateSelects(); renderArtikel(); renderLager(); renderWochenendeAutomat();
+          console.log("Cloud-Daten erfolgreich im Hintergrund nachgeladen.");
+        }
+      })
+      .catch(err => console.error("Hintergrund-Cloud-Ladefehler:", err));
+  }
 };
 
 
@@ -1224,7 +1277,31 @@ window.onload = function() {
 
 
 
-function saveData() { localStorage.setItem("hofmann vending v9", JSON.stringify(data)); updateSelects(); }
+
+async function saveData() {
+  // Lokales Backup im Browser behalten
+  localStorage.setItem("hofmann vending v9", JSON.stringify(data));
+  updateSelects();
+
+  if (GITHUB_TOKEN === "DEIN_GITHUB_TOKEN" || GIST_ID === "DEINE_GIST_ID") return;
+
+  try {
+    const body = { files: { [GIST_FILENAME]: { content: JSON.stringify(data) } } };
+    // FIX: Korrekte API-URL mit Backticks und ohne Tippfehler
+    await fetch(`https://github.com{GIST_ID}`, {
+      method: "PATCH",
+      headers: { 
+        "Authorization": `token ${GITHUB_TOKEN}`, 
+        "Content-Type": "application/json" 
+      },
+      body: JSON.stringify(body)
+    });
+    console.log("Erfolgreich mit GitHub synchronisiert!");
+  } catch (err) {
+    console.error("Cloud-Speicherfehler:", err);
+  }
+}
+
 
 
 function openTab(tabId) {
