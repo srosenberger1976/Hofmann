@@ -143,90 +143,111 @@
     /* ... Hier endet dein vorheriges CSS ... */
 }
 
-/* =========================================================
-   HIER DEN NEUEN BLOCK FÜR MOBILE GERÄTE EINFÜGEN 
-   ========================================================= */
+/* OPTIMIERUNG FÜR MOBILE GERÄTE (SMARTPHONES) */
 @media screen and (max-width: 600px) {
+    
+    /* 1. Jedes einzelne Tabellen-Element radikal in ein Block-Layout zwingen */
     .list-table, 
     .list-table thead, 
     .list-table tbody, 
-    .list-table th, 
-    .list-table td, 
-    .list-table tr { 
+    .list-table tr, 
+    .list-table th,
+    #automat-liste-tbody tr,
+    #automat-liste-tbody td,
+    #lager-table-body tr,
+    #lager-table-body td { 
         display: block !important; 
         width: 100% !important;
-        box-sizing: border-box;
+        box-sizing: border-box !important;
     }
-    .list-table thead {
+    
+    /* 2. Den gestauchten blauen Balken (Überschriften) auf dem Handy komplett unsichtbar machen */
+    .list-table thead,
+    .list-table thead tr,
+    .list-table thead th {
         display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        padding: 0 !important;
+        height: 0 !important;
     }
-    .list-table tr {
-        margin-bottom: 15px;
-        border: 1px solid #cbd5e1;
-        border-radius: 8px;
-        padding: 10px;
-        background: #ffffff;
+    
+    /* 3. Jede Zeile als eigenständige, saubere Karte darstellen */
+    .list-table tr,
+    #automat-liste-tbody tr,
+    #lager-table-body tr {
+        margin-bottom: 20px !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 8px !important;
+        padding: 12px !important;
+        background: #ffffff !important;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.06) !important;
     }
-    .list-table td {
+    
+    /* 4. Die Zellen innerhalb einer Karte untereinander anordnen */
+    .list-table td,
+    #automat-liste-tbody td,
+    #lager-table-body td {
         text-align: left !important;
-        padding: 6px 4px !important;
-        border-bottom: 1px dashed #e2e8f0;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 10px;
+        padding: 8px 4px !important;
+        border-bottom: 1px dashed #e2e8f0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        flex-wrap: wrap !important;
+        gap: 10px !important;
+        float: none !important;
+        width: 100% !important;
     }
-    .list-table td:last-child {
-        border-bottom: none;
-        justify-content: flex-end;
+    
+    /* Letzte Zelle in der Karte braucht keine gestrichelte Linie unten */
+    .list-table td:last-child,
+    #automat-liste-tbody td:last-child,
+    #lager-table-body td:last-child {
+        border-bottom: none !important;
     }
-    #lager-table-body td:first-child,
-    #automat-liste-tbody td:first-child {
-        font-size: 1.05rem;
-        font-weight: bold;
-        background-color: #f8fafc;
-        margin: -10px -10px 5px -10px;
-        padding: 10px !important;
-        border-radius: 7px 7px 0 0;
-        border-bottom: 1px solid #cbd5e1;
+    
+    /* 5. Das erste Feld (Fach / Spirale) als fetten "Karten-Kopf" stylen */
+    #automat-liste-tbody td:first-child,
+    #lager-table-body td:first-child {
+        font-size: 1.1rem !important;
+        font-weight: bold !important;
+        color: #1e293b !important;
+        background-color: #f1f5f9 !important;
+        margin: -12px -12px 8px -12px !important;
+        padding: 10px 15px !important;
+        border-radius: 7px 7px 0 0 !important;
+        border-bottom: 1px solid #cbd5e1 !important;
+        justify-content: flex-start !important;
     }
+
+    /* 6. Eingabefelder und Buttons für Touchscreen-Bedienung optimieren */
     .list-table input[type="number"], 
-    .list-table select {
-        width: 90px !important;
-        padding: 8px !important;
+    .list-table select,
+    #automat-liste-tbody input,
+    #automat-liste-tbody select {
+        width: 100px !important;
+        min-width: 100px !important;
+        padding: 6px 8px !important;
         font-size: 1rem !important;
-        text-align: center;
+        text-align: center !important;
     }
-    .list-table .btn {
-        padding: 8px 12px !important;
-        font-size: 0.9rem !important;
-    }
-    .list-table input[type="checkbox"] {
-        transform: scale(1.5) !important;
-        margin-right: 5px;
-    }
-
-
-    /* Blendet das data-label auf der linken Seite ein */
+    
+    /* Spaltenbeschriftungen (data-label) links anzeigen */
     .list-table td[data-label]::before {
         content: attr(data-label);
-        font-weight: bold;
-        color: #64748b; /* Dezentere graue Farbe für die Beschriftung */
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        display: inline-block;
+        font-weight: bold !important;
+        color: #64748b !important;
+        font-size: 0.8rem !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
     }
-
-    /* Ausnahme für die erste Zelle (Name/ID), da steht die Bezeichnung sonst doppelt */
-    #lager-table-body td:first-child::before,
-    #automat-liste-tbody td:first-child::before {
+    
+    /* Bei der ersten Zelle (Titel) das data-label ausblenden */
+    #automat-liste-tbody td:first-child::before,
+    #lager-table-body td:first-child::before {
         display: none !important;
     }
-
-
-
 }
 
 /* HIER BEGINNT DEIN BESTEHENDER CODENBLOCK AUS DEM SCREENSHOT */
